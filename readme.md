@@ -5,16 +5,16 @@
 ![HTML5](https://img.shields.io/badge/HTML5-Game-orange)
 
 ## 📋 Tabla de Contenidos
-- [🚀 Descripción General](#descripción-general)
-- [📖 Contexto Narrativo](#contexto-narrativo)
-- [🎮 Características Implementadas](#características-implementadas)
-- [🗺️ Sistema de Niveles](#sistema-de-niveles)
-- [👾 Tipos de Enemigos](#tipos-de-enemigos)
-- [⚡ Sistema de Power-ups](#sistema-de-power-ups)
-- [🏗️ Arquitectura Técnica](#arquitectura-técnica)
-- [📁 Estado de Archivos](#estado-de-archivos)
-- [📊 Checklist de Progreso](#checklist-de-progreso)
-- [🔧 Próximos Pasos](#próximos-pasos)
+- [🚀 Descripción General](#-descripción-general)
+- [📖 Contexto Narrativo](#-contexto-narrativo)
+- [🎮 Características Implementadas](#-características-implementadas)
+- [🗺️ Sistema de Niveles](#️-sistema-de-niveles)
+- [👾 Tipos de Enemigos](#-tipos-de-enemigos)
+- [⚡ Sistema de Power-ups](#-sistema-de-power-ups)
+- [🏗️ Arquitectura Técnica](#️-arquitectura-técnica)
+- [📁 Estado de Archivos](#-estado-de-archivos)
+- [📊 Checklist de Progreso](#-checklist-de-progreso)
+- [🔧 Próximos Pasos](#-próximos-pasos)
 
 ## 🚀 Descripción General
 Nebula Defender es un juego shoot'em up espacial desarrollado en JavaScript vanilla que ha evolucionado desde un motor básico hasta un juego completo con arquitectura profesional.
