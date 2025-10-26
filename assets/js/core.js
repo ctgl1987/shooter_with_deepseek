@@ -34,7 +34,7 @@ const DrawManager = {
         }
 
         if (pulse && pulse.amplitude !== undefined && pulse.speed !== undefined) {
-            console.log('Pulse effect applied:', pulse);
+            // console.log('Pulse effect applied:', pulse);
             const time = Date.now() / 1000; // Current time in seconds
             const scale = 1 + Math.sin(time * pulse.speed) * pulse.amplitude;
             this._c.translate(dst.x + dst.width / 2, dst.y + dst.height / 2);
@@ -91,20 +91,28 @@ const AudioManager = {
     _muted: false,
     init: function (list) {
         let lista = Array.isArray(list) ? list : [list];
+        let counter = 0;
         lista.forEach((l) => {
             let { name, src, pool = 10, volume = 0.5 } = l;
             let sound = new Audio(src);
-            sound.preload = true;
-            sound.volume = volume;
+
+            // console.log('Loading sound:', name, l);
+
             sound.onloadeddata = () => {
                 this._sounds[name] = [];
                 for (let i = 0; i < pool; i++) {
                     let clone = sound.cloneNode();
+                    clone.preload = true;
+                    clone.volume = volume;
                     clone.muted = this._muted;
                     this._sounds[name].push(clone);
                     this._allSounds.push(clone);
                 }
-            }
+                counter++;
+                if (counter == lista.length) {
+                    console.log('All sounds loaded');
+                }
+            };
         });
     },
     play: function (name) {
@@ -121,7 +129,6 @@ const AudioManager = {
     },
     playLoop: function (name) {
         let pool = this._sounds[name];
-        console.log(name, pool)
         if (pool) {
             let sound = pool[0];
             sound.loop = true;
@@ -192,6 +199,25 @@ const Utils = {
     clamp: function (value, min, max) {
         return Math.min(Math.max(value, min), max);
     },
+    weightedRandom: function (items) {
+        // Calculate total weight
+        const totalWeight = items.reduce((sum, { weight }) => sum + weight, 0);
+
+        // Generate random number between 0 and totalWeight
+        const random = Math.random() * totalWeight;
+
+        // Find the item that corresponds to the random number
+        let currentWeight = 0;
+        for (const { item, weight } of items) {
+            currentWeight += weight;
+            if (random < currentWeight) {
+                return item;
+            }
+        }
+
+        // Fallback (should rarely happen due to floating point precision)
+        return items[items.length - 1].item;
+    }
 };
 
 const FSM = function (name = 'default') {
@@ -286,6 +312,7 @@ const BaseEntity = function (p = {}) {
     this.vx = 0;
     this.vy = 0;
     this.friction = 1;
+    this.acceleration = 1;
     //visual
     this.color = 'white';
     //state

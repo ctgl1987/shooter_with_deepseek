@@ -22,6 +22,66 @@ const ITEM_SPAWN_CHANCE = 0.3; // 30% de probabilidad de que un enemigo suelte u
 const ScreenManager = new FSM();
 const GameScreenManager = new FSM('game');
 
+const ObjectivesText = {
+    survival: 'Survive the time limit',
+    elimination: 'Eliminate all enemies',
+};
+
+const CheatManager = {
+    _cheats: {},
+    _buffer: [],
+    _counter: 0,
+    register: function (sequence, callback) {
+        this._cheats[sequence] = {
+            sequence: sequence,
+            callback: callback,
+            progress: 0,
+        };
+    },
+    reset: function () {
+        this._buffer = [];
+        this._counter = 0;
+        // console.log('Cheat buffer reset');
+    },
+    update: function () {
+        this._counter++;
+        if (this._counter > 30) {
+            this.reset();
+        }
+    },
+    render: function () {
+        //optional render method if needed
+        //test render buffer
+        // DrawManager.fillText(`Cheat Buffer: ${this._buffer.join('')}`, 10, GAME_HEIGHT - 40, { color: 'yellow', bold: true, baseline: 'top' });
+    },
+    input: function (code) {
+        if (code.length > 1) return; //only single characters
+        this._buffer.push(code);
+        this._counter = 0;
+        if (this._buffer.length > 20) {
+            this._buffer.shift();
+        }
+
+        // console.log('Cheat buffer:', this._buffer.join(''));
+
+        for (const cheatName in this._cheats) {
+            const cheat = this._cheats[cheatName];
+            const seq = cheat.sequence;
+            const bufLen = this._buffer.length;
+
+            if (bufLen >= seq.length) {
+                //get last n items from buffer
+                const recentInput = this._buffer.slice(bufLen - seq.length).join('');
+                if (recentInput === seq) {
+                    //cheat activated
+                    cheat.callback(cheat);
+                    this.reset();
+                }
+            }
+        }
+    }
+};
+
 function bgBuilder(bg_image, speed) {
 
     let bg_width = GAME_WIDTH;
@@ -68,12 +128,12 @@ function menuBuilder(items = []) {
 
             if (type == 'keydown') {
                 if (code == 'ArrowUp') {
-                    AudioManager.play('click');
+                    AudioManager.play('menu');
                     this.index--;
                     if (this.index < 0) this.index = this.items.length - 1;
                 }
                 if (code == 'ArrowDown') {
-                    AudioManager.play('click');
+                    AudioManager.play('menu');
                     this.index++;
                     if (this.index >= this.items.length) this.index = 0;
                 }
@@ -81,7 +141,7 @@ function menuBuilder(items = []) {
                     let item = this.items[this.index];
                     if (item.action) {
                         item.action();
-                        AudioManager.play('click');
+                        AudioManager.play('menu');
                     }
                 }
             }
@@ -111,7 +171,7 @@ function createLevel(id, props = {}) {
         spawnRate: props.spawnRate || 60,
         maxEnemiesOnScreen: props.maxEnemiesOnScreen || 5,
         //objectives: survival or elimination
-        objetive: props.objetive || 'elimination',
+        objective: props.objective || 'elimination',
         timeLimit: props.timeLimit || 300, //in seconds for survival
         enemiesToEliminate: props.enemiesToEliminate || 20, //for elimination
         lastLevel: props.lastLevel || false,
@@ -199,15 +259,15 @@ const EnemyTypes = {
         name: 'Scout',
         color: '#ff4444', // Rojo alienígena
         image_name: 'ship_red',
-        vy: (ENTITY_SIZE * 0.05),
+        vy: 2,
         score: 10,
-        hp: 2,
+        hp: 1,
     },
     heavy: {
         name: 'Heavy',
         color: '#ffaa00', // Naranja metálico
         image_name: 'ship_orange',
-        vy: (ENTITY_SIZE * 0.02),
+        vy: 1,
         score: 20,
         hp: 3,
     },
@@ -215,23 +275,25 @@ const EnemyTypes = {
         name: 'Sniper',
         color: '#aa00ff', // Púrpura alienígena
         image_name: 'ship_purple',
-        vy: (ENTITY_SIZE * 0.03),
+        vy: 1.5,
         score: 30,
         hp: 2,
     },
     hunter: {
         name: 'Hunter',
         image_name: 'ship_green',
-        vy: (ENTITY_SIZE * 0.04),
+        vy: 0.5,
         score: 25,
         hp: 2,
-        behavior: 'hunting', // Nueva propiedad para task específico
+        build: function (e) {
+            e.addTask(SideMovementTask.create());
+        },
     },
     tank: {
         name: 'Tank',
         color: '#888888', // Gris metálico
         image_name: 'ship_gray',
-        vy: (ENTITY_SIZE * 0.015),
+        vy: 0.75,
         score: 40,
         hp: 3,
     },
@@ -239,7 +301,7 @@ const EnemyTypes = {
         name: 'Bomber',
         color: '#885522', // Marrón oxidado
         image_name: 'ship_brown',
-        vy: (ENTITY_SIZE * 0.01),
+        vy: 0.50,
         score: 50,
         hp: 4,
     },
@@ -252,7 +314,7 @@ const EnemyTypes = {
         //big size
         width: ENTITY_SIZE * 2,
         height: ENTITY_SIZE * 2,
-        vy: (ENTITY_SIZE * 0.008),
+        vy: 0.05,
         score: 200,
         hp: 50,
         build: function (e) {
@@ -268,33 +330,43 @@ const ItemTypes = {
         image_name: 'orb_yellow',
         value: 50,
         onCollide: function (target) {
-            //aumenta la puntuación del jugador
-            if (target.type == 'player') {
-                target.emit('score-collected', { score: this.value });
-            }
+            target.emit('score-collected', { score: this.value });
         }
-    },
-    repair: {
-        name: 'Repair Kit',
-        image_name: 'orb_green',
-        value: 5,
-        onCollide: function (target) {
-            target.hp += this.value;
-            target.hp = Utils.clamp(target.hp, 0, target.maxHp);
-        },
     },
     shield: {
         name: 'Energy Shield',
         image_name: 'orb_blue',
         onCollide: function (target) {
-            target.addTask(ShieldBehaviorTask.create());
+            target.addTask(ShieldPowerupTask.create());
         },
     },
     rapidFire: {
         name: 'Rapid Fire Module',
-        image_name: 'orb_purple',
+        image_name: 'orb_red',
         onCollide: function (target) {
             target.addTask(RapidFirePowerupTask.create());
+        },
+    },
+    health: {
+        name: 'Repair Kit',
+        image_name: 'orb_green',
+        value: 5,
+        onCollide: function (target) {
+            target.emit('hp-restored', { amount: this.value });
+        },
+    },
+    speedBoost: {
+        name: 'Speed Boost',
+        image_name: 'orb_orange',
+        onCollide: function (target) {
+            target.addTask(FastSpeedPowerupTask.create());
+        },
+    },
+    lifeDrain: {
+        name: 'Life Drain',
+        image_name: 'orb_purple',
+        onCollide: function (target) {
+            target.addTask(LifeDrainPowerupTask.create());
         },
     },
     tripleShot: {
@@ -304,11 +376,25 @@ const ItemTypes = {
             target.addTask(TripleShotPowerupTask.create());
         }
     },
-    fastSpeed: {
-        name: 'Fast Speed',
-        image_name: 'orb_orange',
+    timeSlow: {
+        name: 'Time Slow',
+        image_name: 'orb_gray',
         onCollide: function (target) {
-            target.addTask(FastSpeedPowerupTask.create());
+            target.addTask(TimeSlowPowerupTask.create());
+        },
+    },
+    // laser: {
+    //     name: 'Laser',
+    //     image_name: 'orb_pink',
+    //     onCollide: function (target) {
+    //         // target.addTask(LaserPowerupTask.create());
+    //     },
+    // },
+    bomb: {
+        name: 'Bomb',
+        image_name: 'orb_black',
+        onCollide: function (target) {
+            target.addTask(BombPowerupTask.create());
         },
     }
 };
@@ -320,10 +406,12 @@ const Levels = [
             'Scanners detect unknown signatures at the edge of the system.',
             'Intercept and identify. Weapons free if hostile.',
         ],
-        enemies: [EnemyTypes.scout],
+        enemies: [
+            { item: EnemyTypes.scout, weight: 1 },
+        ],
         spawnRate: 90,
         maxEnemiesOnScreen: 3,
-        objetive: 'elimination',
+        objective: 'elimination',
         enemiesToEliminate: 20,
         image_name: 'bg_asteroids',
     }),
@@ -333,10 +421,13 @@ const Levels = [
             'This is no scouting party. Full invasion force confirmed.',
             'They broke through Jupiter defense grid! Fall back to Mars orbit!',
         ],
-        enemies: [EnemyTypes.scout, EnemyTypes.heavy],
+        enemies: [
+            { item: EnemyTypes.scout, weight: 3 },
+            { item: EnemyTypes.heavy, weight: 1 },
+        ],
         spawnRate: 80,
         maxEnemiesOnScreen: 4,
-        objetive: 'elimination',
+        objective: 'elimination',
         enemiesToEliminate: 30,
         image_name: 'bg_stars_purple',
     }),
@@ -346,41 +437,55 @@ const Levels = [
             'Mars Colony is evacuating. We are their only cover.',
             'Buy the transports time. Hold this position!',
         ],
-        enemies: [EnemyTypes.scout, EnemyTypes.heavy],
+        enemies: [
+            { item: EnemyTypes.scout, weight: 6 },
+            { item: EnemyTypes.hunter, weight: 2 },
+            { item: EnemyTypes.heavy, weight: 1 },
+        ],
         spawnRate: 70,
         maxEnemiesOnScreen: 5,
-        objetive: 'survival',
+        objective: 'survival',
         timeLimit: 120 * 60,
         image_name: 'bg_stars_green',
-
     }),
     createLevel(4, {
         name: 'Earths Orbital Siege',
         introMessages: ['The battle reaches home. All defense platforms are engaged.', 'Failure is not an option. Earth is counting on us.'],
-        enemies: [EnemyTypes.scout, EnemyTypes.heavy, EnemyTypes.sniper],
+        enemies: [
+            { item: EnemyTypes.scout, weight: 4 },
+            { item: EnemyTypes.heavy, weight: 2 },
+            { item: EnemyTypes.sniper, weight: 1 },
+        ],
         spawnRate: 60,
         maxEnemiesOnScreen: 6,
-        objetive: 'elimination',
+        objective: 'elimination',
         enemiesToEliminate: 40,
         image_name: 'bg_stars_blue',
     }),
     createLevel(5, {
         name: 'Last Stand at Lunar Base',
         introMessages: ['Command is gone. We are the last organized resistance.', 'They are deploying their elite guard. This is for all the marbles.'],
-        enemies: [EnemyTypes.scout, EnemyTypes.heavy, EnemyTypes.sniper, EnemyTypes.tank],
+        enemies: [
+            { item: EnemyTypes.scout, weight: 3 },
+            { item: EnemyTypes.heavy, weight: 2 },
+            { item: EnemyTypes.sniper, weight: 1 },
+            { item: EnemyTypes.tank, weight: 1 },
+        ],
         spawnRate: 50,
         maxEnemiesOnScreen: 7,
-        objetive: 'elimination',
+        objective: 'elimination',
         enemiesToEliminate: 50,
         image_name: 'bg_stars_red',
     }),
     createLevel(6, {
         name: 'The Heart of the Swarm',
         introMessages: ['There it is... the Hive Queen. The source of the invasion.', 'One shot, one kill. End this war now.'],
-        enemies: [EnemyTypes.boss],
+        enemies: [
+            { item: EnemyTypes.boss, weight: 1 },
+        ],
         spawnRate: 40,
         maxEnemiesOnScreen: 1,
-        objetive: 'elimination',
+        objective: 'elimination',
         enemiesToEliminate: 1, //boss only
         image_name: 'bg_ion',
         lastLevel: true,
@@ -395,8 +500,8 @@ const EntityMoveTask = createTask({
         this.entity = entity;
     },
     onUpdate: function () {
-        this.entity.x += this.entity.vx;
-        this.entity.y += this.entity.vy;
+        this.entity.x += this.entity.vx * this.entity.acceleration;
+        this.entity.y += this.entity.vy * this.entity.acceleration;
 
         this.entity.vx *= this.entity.friction;
         this.entity.vy *= this.entity.friction;
@@ -418,53 +523,6 @@ const PlayerControllerTask = createTask({
             this.entity.vx = this.entity.speed.getValue();
         }
     },
-});
-
-const ShieldBehaviorTask = createTask({
-    name: 'Shield',
-    duration: 300,
-    powerup: true,
-    onStart: function (entity) {
-        this.entity = entity;
-        this.r = this.entity.on('pre-render', () => {
-            let pos = this.entity.center();
-            DrawManager.fillCircle(pos.x, pos.y, this.entity.width * 1.5, { color: '#0091ff11' });
-        });
-
-        this.d = this.entity.on('damage-received', (data) => {
-            console.log('Shield absorbed damage!', data.damage);
-            data.damage = 0;
-        });
-    },
-    onComplete: function () {
-        this.r.remove();
-        this.d.remove();
-    }
-});
-
-const RapidFirePowerupTask = createTask({
-    name: 'Rapid Fire',
-    duration: 600,
-    powerup: true,
-    onStart: function (entity) {
-        this.entity = entity;
-        this.entity.weapon.fireRate /= 2;
-    },
-    onComplete: function () {
-        this.entity.weapon.reset();
-    }
-});
-
-const HuntingTask = createTask({
-    name: 'HuntingTask',
-    onStart: function (entity) {
-        this.entity = entity;
-    },
-    onUpdate: function () {
-        // Persigue al player suavemente
-        // let dx = this.entity.scene.player.x - this.entity.x;
-        // this.entity.vx = Math.sign(dx) * 0.5;
-    }
 });
 
 const EnemyFireTask = createTask({
@@ -503,7 +561,6 @@ const EnemyFireTask = createTask({
             let data = { bullets: [b] };
             this.entity.emit('bullet-created', data);
             this.entity.emit('enemy-fire', data);
-            console.log('Enemy fired a bullet!');
         }
     },
 });
@@ -592,12 +649,51 @@ const BossTask = createTask({
     },
 });
 
+const SideMovementTask = createTask({
+    name: 'SideMovementTask',
+    duration: Infinity,
+    onStart: function (entity) {
+        this.entity = entity;
+    },
+    onUpdate: function () {
+        this.entity.vx = Math.sin(Date.now() * 0.002) * 2;
+    },
+    onComplete: function () {
+
+    }
+});
+
+//powerup tasks
+
+const ShieldPowerupTask = createTask({
+    name: 'Shield',
+    duration: 300,
+    powerup: true,
+    onStart: function (entity) {
+        AudioManager.play('shield');
+        this.entity = entity;
+        this.r = this.entity.on('pre-render', () => {
+            let pos = this.entity.center();
+            DrawManager.fillCircle(pos.x, pos.y, this.entity.width * 1.5, { color: '#0091ff11' });
+        });
+
+        this.d = this.entity.on('damage-received', (data) => {
+            console.log('Shield absorbed damage!', data.damage);
+            data.damage = 0;
+        });
+    },
+    onComplete: function () {
+        this.r.remove();
+        this.d.remove();
+    }
+});
+
 const TripleShotPowerupTask = createTask({
     name: 'Triple Shot',
     duration: 450,
     powerup: true,
     onStart: function (entity) {
-        this.originalFire = entity.on('bullet-created', (data) => {
+        this.l = entity.on('bullet-created', (data) => {
             // Crear 3 balas en abanico
             // let bullets = this.createTripleBullets(entity);
             let base = data.bullets[0];
@@ -627,7 +723,7 @@ const TripleShotPowerupTask = createTask({
         });
     },
     onComplete: function () {
-        this.originalFire.remove();
+        this.l.remove();
     }
 });
 
@@ -641,6 +737,76 @@ const FastSpeedPowerupTask = createTask({
     },
     onComplete: function () {
         this.entity.speed._modifier = 0;
+    }
+});
+
+const RapidFirePowerupTask = createTask({
+    name: 'Rapid Fire',
+    duration: 600,
+    powerup: true,
+    onStart: function (entity) {
+        this.entity = entity;
+        this.entity.weapon.fireRate /= 2;
+    },
+    onComplete: function () {
+        this.entity.weapon.reset();
+    }
+});
+
+const LifeDrainPowerupTask = createTask({
+    name: 'Life Drain',
+    duration: 600,
+    powerup: true,
+    onStart: function (entity) {
+        this.entity = entity;
+        this.l = entity.on('bullet-created', (data) => {
+            // Cada vez que se crea una bala, añade un evento de colisión para drenar vida
+            data.bullets.forEach((bullet) => {
+                bullet.on('bullet-hit', ({ damage }) => {
+                    console.log('Life Drain activated! Restoring ', damage, ' HP.');
+                    this.entity.emit('hp-restored', { amount: damage });
+                });
+            });
+        });
+    },
+    onComplete: function () {
+        this.l.remove();
+    }
+});
+
+const BombPowerupTask = createTask({
+    name: 'Bomb',
+    duration: 1, // Efecto instantáneo
+    powerup: true,
+    onStart: function (entity) {
+        GamePlayScreen.enemies.forEach((enemy) => {
+            enemy.emit('damage-received');
+            enemy.dead = true; // Marca a todos los enemigos como muertos
+        });
+    }
+});
+
+const TimeSlowPowerupTask = createTask({
+    name: 'Time Slow',
+    duration: 300, // Duración del efecto
+    powerup: true,
+    onStart: function (entity) {
+        this.entity = entity;
+        this.l = entity.on('bullet-created', (data) => {
+            // Cada vez que se crea una bala, añade un evento de colisión para drenar vida
+            data.bullets.forEach((bullet) => {
+                bullet.on('bullet-hit', ({ damage, target }) => {
+                    // Ralentiza el objetivo al ser golpeado
+                    if (target.timeSlowApplied) return; // Ya aplicado
+                    target.timeSlowApplied = true;
+                    target.acceleration *= 0.5;
+                    console.log('Time Slow activated on target!');
+                });
+            });
+        });
+    },
+    onComplete: function () {
+        this.l.remove();
     }
 });
 
@@ -680,6 +846,20 @@ function createScreenFlasher(color = 'white', duration = 10) {
 
 
 //screens fuera del juego
+const StartScreen = new BaseScreen({
+    input: function (type, code) {
+        if (type == 'keydown') {
+            AudioManager.playLoop('bg');
+            ScreenManager.change('load', { images: IMAGE_LIST });
+        }
+    },
+    render: function () {
+        DrawManager.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT, { color: BG_COLOR });
+
+        //press any key to start
+        DrawManager.fillText('Press Any Key to Start', GAME_WIDTH * 0.5, GAME_HEIGHT * 0.5, { size: 30, align: 'center' });
+    }
+});
 
 const LoadScreen = new BaseScreen({
     enter: function ({ images = [] }) {
@@ -867,8 +1047,8 @@ const GameScreen = new BaseScreen({
     enter: function () {
         GameScreenManager.change('game_level_select');
     },
-    input: function (type, code) {
-        GameScreenManager.input(type, code);
+    input: function (type, code, event) {
+        GameScreenManager.input(type, code, event);
     },
     update: function () {
         GameScreenManager.update();
@@ -930,7 +1110,7 @@ const LevelSelectScreen = new BaseScreen({
 
         this.bg = bgBuilder(ImageManager.get('bg_intro'), 0.5);
 
-        //6 levels, last is boss
+        // 6 levels, last is boss
         // id, name, unlocked
         this.levels = Levels.map((level) => {
             return {
@@ -950,8 +1130,6 @@ const LevelSelectScreen = new BaseScreen({
             }
         }
 
-        console.log(this.selectedLevel, this.levels.length);
-
         if (this.selectedLevel >= this.levels.length) {
             this.selectedLevel = 1;
         }
@@ -966,19 +1144,21 @@ const LevelSelectScreen = new BaseScreen({
 
             //up/down to select level
             if (code == 'ArrowUp') {
+                AudioManager.play('menu');
                 this.selectedLevel--;
                 if (this.selectedLevel < 1) this.selectedLevel = this.levels.length;
             }
             if (code == 'ArrowDown') {
+                AudioManager.play('menu');
                 this.selectedLevel++;
                 if (this.selectedLevel > this.levels.length) this.selectedLevel = 1;
             }
 
             if (code == 'Enter') {
-                AudioManager.play('click');
                 if (!this.levels[this.selectedLevel - 1].unlocked) {
                     return; //level locked
                 }
+                AudioManager.play('menu');
                 GameScreenManager.change('game_play', {
                     level: {
                         ...Levels[this.selectedLevel - 1]
@@ -1061,7 +1241,8 @@ const GamePlayScreen = new BaseScreen({
 
         this.enemySpawnTimer.value = 0;
 
-        let template = _e ?? this.level.enemies[Utils.randomInt(0, this.level.enemies.length - 1)];
+        // let template = _e ?? this.level.enemies[Utils.randomInt(0, this.level.enemies.length - 1)];
+        let template = _e ?? Utils.weightedRandom(this.level.enemies);
 
         let e = new BaseEntity({
             type: 'enemy',
@@ -1073,8 +1254,6 @@ const GamePlayScreen = new BaseScreen({
         });
 
         e.extend({ ...template, color: 'transparent' });
-
-
 
         e.image = ImageManager.get(template.image_name);
 
@@ -1098,17 +1277,11 @@ const GamePlayScreen = new BaseScreen({
         e.addTask(EntityMoveTask.create());
         e.addTask(EnemyFireTask.create());
 
-        // if (e.boss) {
-        //     e.addTask(BossTask.create());
-        // } else {
-        // }
-
         if (template.build) {
             template.build(e);
         }
 
         e.on('enemy-fire', (data) => {
-            console.log(data.bullets.length);
             data.bullets.forEach((b) => {
                 this.enemiesBullets.push(b);
             });
@@ -1120,7 +1293,7 @@ const GamePlayScreen = new BaseScreen({
 
         e.on('enemy-destroyed', () => {
             //increase enemy dead counter
-            if (this.level.objetive == 'elimination') {
+            if (this.level.objective == 'elimination') {
                 this.level.enemiesToEliminate--;
             }
         });
@@ -1161,11 +1334,12 @@ const GamePlayScreen = new BaseScreen({
 
         let item = _i || Utils.randomItem(Object.values(ItemTypes));
 
-        let i = new BaseEntity({
-            width: ENTITY_SIZE * 0.5,
-            height: ENTITY_SIZE * 0.5,
-            vy: 2,
+        console.log('Spawning item: ', item.name);
 
+        let i = new BaseEntity({
+            width: ENTITY_SIZE * 0.75,
+            height: ENTITY_SIZE * 0.75,
+            vy: 2,
         });
 
         i.extend({ ...item, color: 'transparent' });
@@ -1196,6 +1370,12 @@ const GamePlayScreen = new BaseScreen({
                 this.dead = true;
             }
         };
+
+        t.render = function (offsetX = 0, offsetY = 0) {
+            //with alpha based on ttl
+            let alpha = this.ttl / ttl;
+            DrawManager.fillText(this.text, this.x + offsetX, this.y + offsetY, { color: `rgba(255, 255, 0, ${alpha})`, align: 'center' });
+        }
 
         this.texts.push(t);
     },
@@ -1230,14 +1410,14 @@ const GamePlayScreen = new BaseScreen({
 
     checkLevelComplete: function () {
         if (this.completed) return;
-        if (this.level.objetive == 'elimination') {
+        if (this.level.objective == 'elimination') {
             //check if all enemies eliminated
             if (this.level.enemiesToEliminate <= 0) {
                 this.levelCompleted();
             }
         }
 
-        if (this.level.objetive == 'survival') {
+        if (this.level.objective == 'survival') {
             //change time limit to frames
             this.level.timeLimit--;
 
@@ -1250,6 +1430,7 @@ const GamePlayScreen = new BaseScreen({
 
     levelCompleted: function () {
         this.completed = true;
+
         console.log('Level Complete!');
         GameState.levelsUnlocked[this.level.id + 1] = true;
         GameState.levelsCompleted[this.level.id] = true;
@@ -1286,6 +1467,7 @@ const GamePlayScreen = new BaseScreen({
         this.player.removeTask(PlayerControllerTask.name);
 
         setTimeout(() => {
+            AudioManager.play('warpout');
             this.player.vy = -5;
         }, 1000);
     },
@@ -1304,7 +1486,7 @@ const GamePlayScreen = new BaseScreen({
     },
 
     enter: function (data) {
-        console.log('Starting level:', data.level);
+        console.log(`Starting level: ${data.level.id} - ${data.level.name} (${data.level.objective})`);
         this.level = data.level;
         this.introTimer.value = 0;
         this.score = 0;
@@ -1329,7 +1511,7 @@ const GamePlayScreen = new BaseScreen({
             maxHp: 10,
             friction: 0.8,
             weapon: PlayerWeapon(),
-            speed: makeAttribute(ENTITY_SIZE * 0.1),
+            speed: makeAttribute(5),
         });
 
         this.player.addTask(PlayerControllerTask.create());
@@ -1339,6 +1521,13 @@ const GamePlayScreen = new BaseScreen({
         });
         this.player.on('damage-received', () => {
             this.spawnParticles(this.player.center());
+        });
+
+        this.player.on('hp-restored', (data) => {
+            this.player.hp += data.amount;
+            this.player.hp = Utils.clamp(this.player.hp, 0, this.player.maxHp);
+            this.spawnParticles(this.player.center());
+            this.showText(`Healed +${data.amount} HP`, 120);
         });
 
         this.player.image = ImageManager.get('ship_blue');
@@ -1363,18 +1552,69 @@ const GamePlayScreen = new BaseScreen({
 
         this.player.centerTo({ x: GAME_WIDTH * 0.5 });
 
-        this.bg = bgBuilder(ImageManager.get(this.level.image_name ?? 'bg_space'), 2);
+        this.bg = bgBuilder(ImageManager.get(this.level.image_name ?? 'bg_space'), 1);
 
         this.redFlash = createScreenFlasher('rgba(255, 0, 0, 0.1)', 5);
+
+        //add cheats
+        CheatManager.reset();
+        CheatManager.register('godmode', (cheat) => {
+            console.log('Toggling God Mode', cheat);
+            if (cheat.l1) {
+                console.log('God Mode Deactivated!');
+                cheat.l1.remove();
+                delete cheat.l1;
+                cheat.l2.remove();
+                delete cheat.l2;
+            } else {
+                console.log('God Mode Activated!');
+                cheat.l1 = this.player.on('damage-received', (data) => {
+                    data.damage = 0;
+                });
+                cheat.l2 = this.player.on('pre-render', () => {
+                    let pos = this.player.center();
+                    //gold color
+                    let color = '#ffff0011';
+                    DrawManager.fillCircle(pos.x, pos.y, this.player.width * 1.5, { color });
+
+                    //render GOD MODE text
+                    DrawManager.fillText('GOD MODE', this.player.x + this.player.width * 0.5, this.player.y - 30, { color: 'yellow', align: 'center' });
+                });
+            }
+        });
+        CheatManager.register('allpower', (cheat) => {
+            console.log('All Powerups Activated!');
+            this.player.addTask(ShieldPowerupTask.create(this.player));
+            this.player.addTask(TripleShotPowerupTask.create(this.player));
+            this.player.addTask(FastSpeedPowerupTask.create(this.player));
+            this.player.addTask(RapidFirePowerupTask.create(this.player));
+            this.player.addTask(LifeDrainPowerupTask.create(this.player));
+            this.player.addTask(BombPowerupTask.create(this.player));
+            this.player.addTask(TimeSlowPowerupTask.create(this.player));
+        });
+        //HEALME cheat
+        CheatManager.register('healme', (cheat) => {
+            console.log('Heal Me Activated!');
+            this.player.hp = this.player.maxHp;
+            this.showText(`Healed to Full HP`, 120);
+        });
     },
 
-    input: function (type, code) {
+    input: function (type, code, event) {
+
         if (type == 'keydown') {
+            if (event.key) {
+                CheatManager.input(event.key);
+            }
             if (code == 'Escape') GameScreenManager.push('game_pause');
         }
+
+        //check cheats
     },
 
     update: function () {
+
+        CheatManager.update();
 
         this.redFlash.update();
 
@@ -1463,6 +1703,7 @@ const GamePlayScreen = new BaseScreen({
 
                 if (Utils.collision(e, b)) {
                     b.dead = true;
+                    b.emit('bullet-hit', { damage: b.damage, target: e });
                     e.hp -= b.damage;
                     e.emit('damage-received');
                     if (e.hp <= 0) {
@@ -1473,7 +1714,7 @@ const GamePlayScreen = new BaseScreen({
 
                         //spawn item
                         let chance = Utils.randomDouble(0, 1);
-                        console.log('Item spawn chance:', chance);
+
                         if (chance < ITEM_SPAWN_CHANCE) {
                             this.spawnItem(e.center());
                         }
@@ -1537,6 +1778,8 @@ const GamePlayScreen = new BaseScreen({
         //render bg
         this.bg.render();
 
+        CheatManager.render();
+
         //render entities
 
         this.enemies.forEach((_) => {
@@ -1567,7 +1810,7 @@ const GamePlayScreen = new BaseScreen({
         //render info texts
         let counts = 0;
         this.texts.slice().reverse().forEach((t) => {
-            DrawManager.fillText(t.text, GAME_WIDTH / 2, GAME_HEIGHT - 30 - (counts * 20), { align: 'center' });
+            t.render(GAME_WIDTH / 2, GAME_HEIGHT - 30 - (counts * 25));
             counts++;
         });
 
@@ -1585,7 +1828,7 @@ const GamePlayScreen = new BaseScreen({
             DrawManager.fillText(`-- Level ${this.level.id}: ${this.level.name} --`, GAME_WIDTH * 0.5, introOffsetY, { size: 30, align: 'center', color: `rgba(255,255,0,${alpha})` });
             introOffsetY += 40;
 
-            let messages = this.level.introMessages || [this.level.introMessage];
+            let messages = [...(this.level.introMessages || [this.level.introMessage]), '', `Objective: ${ObjectivesText[this.level.objective]}`];
             messages.forEach((msg) => {
                 DrawManager.fillText(msg, GAME_WIDTH * 0.5, introOffsetY, { align: 'center', color: `rgba(255,255,255,${alpha})` });
                 introOffsetY += 30;
@@ -1600,17 +1843,17 @@ const GamePlayScreen = new BaseScreen({
         DrawManager.fillText(`Score: ${this.score}`, 10, offsetY, { color: 'yellow', size: 24 });
         offsetY += 25;
 
-        //level objetive
-        let levelObjetive = '';
-        if (this.level.objetive == 'elimination') {
-            levelObjetive = `Enemies Left: ${this.level.enemiesToEliminate}`;
+        //level objective
+        let levelObjective = '';
+        if (this.level.objective == 'elimination') {
+            levelObjective = `Enemies Left: ${this.level.enemiesToEliminate}`;
         }
 
-        if (this.level.objetive == 'survival') {
+        if (this.level.objective == 'survival') {
             let secondsLeft = Math.ceil(this.level.timeLimit / 60);
-            levelObjetive = `Time Left: ${secondsLeft}s`;
+            levelObjective = `Time Left: ${secondsLeft}s`;
         }
-        DrawManager.fillText(levelObjetive, GAME_WIDTH / 2, 10, { align: 'center', color: 'yellow', size: 24 });
+        DrawManager.fillText(levelObjective, GAME_WIDTH / 2, 10, { align: 'center', color: 'yellow', size: 24 });
 
 
         //player tasks on lower left
@@ -1678,6 +1921,60 @@ function completeGame() {
     saveGame();
 }
 
+const IMAGE_LIST = [
+    //ships
+    { name: 'ship_yellow', src: 'assets/images/ships/ship_yellow.png' },
+    { name: 'ship_blue', src: 'assets/images/ships/ship_blue.png' },
+    { name: 'ship_gray', src: 'assets/images/ships/ship_gray.png' },
+    { name: 'ship_green', src: 'assets/images/ships/ship_green.png' },
+    { name: 'ship_orange', src: 'assets/images/ships/ship_orange.png' },
+    { name: 'ship_purple', src: 'assets/images/ships/ship_purple.png' },
+    { name: 'ship_red', src: 'assets/images/ships/ship_red.png' },
+    { name: 'ship_white', src: 'assets/images/ships/ship_white.png' },
+    { name: 'ship_brown', src: 'assets/images/ships/ship_brown.png' },
+    { name: 'ship_pale', src: 'assets/images/ships/ship_pale.png' },
+    //orbs
+    { name: 'orb_yellow', src: 'assets/images/items/orb_yellow.png' },
+    { name: 'orb_blue', src: 'assets/images/items/orb_blue.png' },
+    { name: 'orb_red', src: 'assets/images/items/orb_red.png' },
+    { name: 'orb_green', src: 'assets/images/items/orb_green.png' },
+    { name: 'orb_orange', src: 'assets/images/items/orb_orange.png' },
+    { name: 'orb_purple', src: 'assets/images/items/orb_purple.png' },
+    { name: 'orb_white', src: 'assets/images/items/orb_white.png' },
+    { name: 'orb_gray', src: 'assets/images/items/orb_gray.png' },
+    { name: 'orb_black', src: 'assets/images/items/orb_black.png' },
+    { name: 'orb_pink', src: 'assets/images/items/orb_pink.png' },
+    //bg
+    { name: 'bg_title', src: 'assets/images/bg/bg_title.png' },
+    { name: 'bg_intro', src: 'assets/images/bg/bg_intro.png' },
+    { name: 'bg_space', src: 'assets/images/bg/bg_space_blue.jpg' },
+    { name: 'bg_ice', src: 'assets/images/bg/bg_ice.png' },
+    { name: 'bg_ion', src: 'assets/images/bg/bg_ion.png' },
+
+    { name: 'bg_asteroids', src: 'assets/images/bg/bg_asteroids.png' },
+
+    { name: 'bg_stars_purple', src: 'assets/images/bg/bg_stars_purple.png' },
+    { name: 'bg_stars_blue', src: 'assets/images/bg/bg_stars_blue.png' },
+    { name: 'bg_stars_red', src: 'assets/images/bg/bg_stars_red.png' },
+    { name: 'bg_stars_orange', src: 'assets/images/bg/bg_stars_orange.png' },
+    { name: 'bg_stars_green', src: 'assets/images/bg/bg_stars_green.png' },
+];
+
+const SOUND_LIST = [
+    //effects
+    { name: 'shoot', src: 'assets/sounds/effects/shot.wav' },
+    { name: 'powerup', src: 'assets/sounds/effects/coin.wav' },
+    { name: 'explosion', src: 'assets/sounds/effects/explosion.ogg', volume: 0.2 },
+    { name: 'menu', src: 'assets/sounds/effects/menu.wav', volume: 0.2 },
+    { name: 'shield', src: 'assets/sounds/effects/shield.wav' },
+    { name: 'warpout', src: 'assets/sounds/effects/warpout.ogg' },
+
+
+    //music
+    { name: 'cyclotron', src: 'assets/sounds/music/cyclotron.mp3' },
+    { name: 'bg', src: 'assets/sounds/music/bg.wav' },
+];
+
 //main events
 function init() {
 
@@ -1692,55 +1989,14 @@ function init() {
 
     // AudioManager.toogleMute(); //start muted
 
-    const IMAGE_LIST = [
-        //ships
-        { name: 'ship_yellow', src: 'assets/images/ships/ship_yellow.png' },
-        { name: 'ship_blue', src: 'assets/images/ships/ship_blue.png' },
-        { name: 'ship_gray', src: 'assets/images/ships/ship_gray.png' },
-        { name: 'ship_green', src: 'assets/images/ships/ship_green.png' },
-        { name: 'ship_orange', src: 'assets/images/ships/ship_orange.png' },
-        { name: 'ship_purple', src: 'assets/images/ships/ship_purple.png' },
-        { name: 'ship_red', src: 'assets/images/ships/ship_red.png' },
-        { name: 'ship_white', src: 'assets/images/ships/ship_white.png' },
-        { name: 'ship_brown', src: 'assets/images/ships/ship_brown.png' },
-        { name: 'ship_pale', src: 'assets/images/ships/ship_pale.png' },
-        //orbs
-        { name: 'orb_yellow', src: 'assets/images/items/orb_yellow.png' },
-        { name: 'orb_blue', src: 'assets/images/items/orb_blue.png' },
-        { name: 'orb_gray', src: 'assets/images/items/orb_gray.png' },
-        { name: 'orb_green', src: 'assets/images/items/orb_green.png' },
-        { name: 'orb_orange', src: 'assets/images/items/orb_orange.png' },
-        { name: 'orb_purple', src: 'assets/images/items/orb_purple.png' },
-        { name: 'orb_red', src: 'assets/images/items/orb_red.png' },
-        { name: 'orb_white', src: 'assets/images/items/orb_white.png' },
-        { name: 'orb_brown', src: 'assets/images/items/orb_brown.png' },
-        //bg
-        { name: 'bg_title', src: 'assets/images/bg/bg_title.png' },
-        { name: 'bg_intro', src: 'assets/images/bg/bg_intro.png' },
-        { name: 'bg_space', src: 'assets/images/bg/bg_space_blue.jpg' },
-        { name: 'bg_ice', src: 'assets/images/bg/bg_ice.png' },
-        { name: 'bg_ion', src: 'assets/images/bg/bg_ion.png' },
-
-        { name: 'bg_asteroids', src: 'assets/images/bg/bg_asteroids.png' },
-
-        { name: 'bg_stars_purple', src: 'assets/images/bg/bg_stars_purple.png' },
-        { name: 'bg_stars_blue', src: 'assets/images/bg/bg_stars_blue.png' },
-        { name: 'bg_stars_red', src: 'assets/images/bg/bg_stars_red.png' },
-        { name: 'bg_stars_orange', src: 'assets/images/bg/bg_stars_orange.png' },
-        { name: 'bg_stars_green', src: 'assets/images/bg/bg_stars_green.png' },
-    ];
-
-    AudioManager.init([
-        { name: 'shoot', src: 'assets/sounds/laser6.mp3' },
-        { name: 'powerup', src: 'assets/sounds/powerUp5.mp3' },
-        { name: 'click', src: 'assets/sounds/tone1.mp3' },
-        { name: 'cyclotron', src: 'assets/sounds/music/cyclotron.mp3', pool: 1 },
-    ]);
+    AudioManager.init(SOUND_LIST);
 
     KeyManager.init((type, code, e) => {
-        input(type, code, e)
+        input(type, code, e);
     });
 
+    ScreenManager.add('start', StartScreen);
+    ScreenManager.add('load', LoadScreen);
     ScreenManager.add('load', LoadScreen);
     ScreenManager.add('menu', MenuScreen);
     ScreenManager.add('intro', IntroScreen);
@@ -1754,9 +2010,7 @@ function init() {
     GameScreenManager.add('game_level_completed', LevelCompletedScreen);
 
 
-    ScreenManager.change('load', { images: IMAGE_LIST });
-
-
+    ScreenManager.change('start');
 }
 
 function input(type, code, e) {
@@ -1794,8 +2048,6 @@ function loop() {
 }
 
 function start() {
-    // alert(nw);
-    canvas.requestFullscreen();
     init();
     requestAnimationFrame(() => {
         loop();
