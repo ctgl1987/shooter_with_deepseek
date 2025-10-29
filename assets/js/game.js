@@ -1521,6 +1521,7 @@ const GamePlayScreen = new BaseScreen({
         this.level = data.level;
         this.introTimer.value = 0;
         this.score = 0;
+        this.completed = false;
 
         this.enemySpawnTimer.value = 0;
         this.enemySpawnTimer.limit = this.level.spawnRate;
