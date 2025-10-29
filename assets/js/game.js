@@ -1606,10 +1606,16 @@ const GamePlayScreen = new BaseScreen({
                 delete cheat.l1;
                 cheat.l2.remove();
                 delete cheat.l2;
-                this.player.sprite.image = ImageManager.get('ship_blue');
+                this.player.sprite = new Sprite(ImageManager.get('ship_blue'), {
+                    frames: 4,
+                    frameRate: 5,
+                });
             } else {
                 console.log('God Mode Activated!');
-                this.player.sprite.image = ImageManager.get('ship_white');
+                this.player.sprite = new Sprite(ImageManager.get('ship_white'), {
+                    frames: 0,
+                    frameRate: 5,
+                });
                 cheat.l1 = this.player.on('damage-received', (data) => {
                     data.damage = 0;
                 });
@@ -1975,7 +1981,9 @@ const IMAGE_LIST = [
     { name: 'ship_white', src: 'assets/images/ships/ship_white.png' },
     { name: 'ship_brown', src: 'assets/images/ships/ship_brown.png' },
     { name: 'ship_pale', src: 'assets/images/ships/ship_pale.png' },
-    { name: 'Dove', src: 'assets/images/ships/Dove.png' },
+    { name: 'Dove', src: 'assets/images/ships/Dove2.png' },
+    { name: 'Ligher', src: 'assets/images/ships/Ligher.png' },
+    { name: 'Ninja', src: 'assets/images/ships/Ninja.png' },
 
     //orbs
     { name: 'orb_yellow', src: 'assets/images/items/orb_yellow.png' },
