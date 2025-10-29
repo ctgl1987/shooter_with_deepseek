@@ -205,6 +205,37 @@ function createBullet(props = {}) {
     return b;
 }
 
+function Sprite(image, { frames = 4, frameRate = 10 } = {}) {
+    this.image = image;
+    this.frameWidth = frames ? image.width / frames : image.width;
+    this.frameHeight = image.height;
+    this.frame = 0;
+    this.frameCounter = 0;
+    this.frames = frames;
+    this.frameRate = frameRate;
+
+    this.update = function () {
+        this.frameCounter++;
+        if (this.frameCounter >= this.frameRate) {
+            this.frameCounter = 0;
+            this.frame++;
+            if (this.frame >= this.frames) {
+                this.frame = 0;
+            }
+        }
+    };
+
+    this.render = function (bounds) {
+
+        DrawManager.drawImage(this.image, bounds, {
+            x: this.frame * this.frameWidth,
+            y: 0,
+            width: this.frameWidth,
+            height: this.frameHeight
+        });
+    }
+}
+
 const PlayerWeapon = function () {
     return {
         _baseFireRate: 20,
@@ -1516,9 +1547,18 @@ const GamePlayScreen = new BaseScreen({
 
         this.player.addTask(PlayerControllerTask.create());
         this.player.addTask(EntityMoveTask.create());
+
+
+        this.player.sprite = new Sprite(ImageManager.get('ship_blue'), {
+            frames: 0,
+            frameRate: 5,
+        });
+
         this.player.on('pre-update', () => {
             this.player.weapon.update();
+            this.player.sprite.update();
         });
+
         this.player.on('damage-received', () => {
             this.spawnParticles(this.player.center());
         });
@@ -1530,11 +1570,10 @@ const GamePlayScreen = new BaseScreen({
             this.showText(`Healed +${data.amount} HP`, 120);
         });
 
-        this.player.image = ImageManager.get('ship_blue');
-
         this.player.on('post-render', (evt) => {
             //draw ship
-            DrawManager.drawImage(this.player.image, this.player.bounds());
+            this.player.sprite.render(this.player.bounds());
+
             //draw hp bar
             hpBar({
                 value: this.player.hp,
@@ -1566,8 +1605,10 @@ const GamePlayScreen = new BaseScreen({
                 delete cheat.l1;
                 cheat.l2.remove();
                 delete cheat.l2;
+                this.player.sprite.image = ImageManager.get('ship_blue');
             } else {
                 console.log('God Mode Activated!');
+                this.player.sprite.image = ImageManager.get('ship_white');
                 cheat.l1 = this.player.on('damage-received', (data) => {
                     data.damage = 0;
                 });
@@ -1933,6 +1974,8 @@ const IMAGE_LIST = [
     { name: 'ship_white', src: 'assets/images/ships/ship_white.png' },
     { name: 'ship_brown', src: 'assets/images/ships/ship_brown.png' },
     { name: 'ship_pale', src: 'assets/images/ships/ship_pale.png' },
+    { name: 'Dove', src: 'assets/images/ships/Dove.png' },
+
     //orbs
     { name: 'orb_yellow', src: 'assets/images/items/orb_yellow.png' },
     { name: 'orb_blue', src: 'assets/images/items/orb_blue.png' },
