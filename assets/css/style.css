@@ -33,7 +33,7 @@ canvas {
     /* Nunca sobrepasa la pantalla */
     object-fit: contain;
     /* Mantiene relación de aspecto */
-    image-rendering: pixelated;
+    /* image-rendering: pixelated; */
 }
 
 :fullscreen {

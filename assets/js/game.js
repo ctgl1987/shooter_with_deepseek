@@ -25,6 +25,7 @@ const GameScreenManager = new FSM('game');
 const ObjectivesText = {
     survival: 'Survive the time limit',
     elimination: 'Eliminate all enemies',
+    collectData: 'Collect all data caches',
 };
 
 const CheatManager = {
@@ -170,12 +171,15 @@ function createLevel(id, props = {}) {
         enemies: props.enemies || [],
         spawnRate: props.spawnRate || 60,
         maxEnemiesOnScreen: props.maxEnemiesOnScreen || 5,
-        //objectives: survival or elimination
+        //objectives: survival or elimination or collectData
         objective: props.objective || 'elimination',
         timeLimit: props.timeLimit || 300, //in seconds for survival
         enemiesToEliminate: props.enemiesToEliminate || 20, //for elimination
+        dataToCollect: props.dataToCollect || 0,
+        itemDropRate: props.itemDropRate || ITEM_SPAWN_CHANCE, // ← AÑADE ESTA LÍNEA
         lastLevel: props.lastLevel || false,
         image_name: props.image_name || null,
+        endMessages: props.endMessages || [`Level Completed!`],
     }
 }
 
@@ -197,7 +201,7 @@ function createBullet(props = {}) {
         owner: props.owner,
         x: props.owner.center().x,
         width: (ENTITY_SIZE * 0.05),
-        height: (ENTITY_SIZE * 0.5),
+        height: (ENTITY_SIZE * 0.2),
         color: 'red',
         damage: 1,
     });
@@ -341,11 +345,11 @@ const EnemyTypes = {
         //fancy name for boss
         name: 'Hive Queen',
         color: '#ffff44', // Amarillo brillante
-        image_name: 'ship_yellow',
+        image_name: 'ship_yellow2',
         //big size
-        width: ENTITY_SIZE * 2,
-        height: ENTITY_SIZE * 2,
-        vy: 0.05,
+        width: ENTITY_SIZE * 3,
+        height: ENTITY_SIZE * 3,
+        vy: 0.2,
         score: 200,
         hp: 50,
         build: function (e) {
@@ -407,25 +411,19 @@ const ItemTypes = {
             target.addTask(TripleShotPowerupTask.create());
         }
     },
-    timeSlow: {
-        name: 'Time Slow',
+    freeze: {
+        name: 'Freeze',
         image_name: 'orb_gray',
         onCollide: function (target) {
-            target.addTask(TimeSlowPowerupTask.create());
+            target.addTask(FreezePowerupTask.create());
         },
     },
-    // laser: {
-    //     name: 'Laser',
-    //     image_name: 'orb_pink',
-    //     onCollide: function (target) {
-    //         // target.addTask(LaserPowerupTask.create());
-    //     },
-    // },
     bomb: {
         name: 'Bomb',
         image_name: 'orb_black',
         onCollide: function (target) {
-            target.addTask(BombPowerupTask.create());
+            // target.addTask(BombPowerupTask.create());
+            target.bombs++;
         },
     }
 };
@@ -445,6 +443,7 @@ const Levels = [
         objective: 'elimination',
         enemiesToEliminate: 20,
         image_name: 'bg_asteroids',
+        endMessages: ['Initial contact made. Prepare for escalating hostilities.'],
     }),
     createLevel(2, {
         name: 'The Outer Rim Offensive',
@@ -461,6 +460,7 @@ const Levels = [
         objective: 'elimination',
         enemiesToEliminate: 30,
         image_name: 'bg_stars_purple',
+        endMessages: ['Mars orbit reached. Prepare for next wave.'],
     }),
     createLevel(3, {
         name: 'The Martian Gauntlet',
@@ -478,8 +478,33 @@ const Levels = [
         objective: 'survival',
         timeLimit: 120 * 60,
         image_name: 'bg_stars_green',
+        endMessages: ['Transports have cleared Mars orbit. Heading back to Earth.'],
     }),
     createLevel(4, {
+        name: 'Data Recovery Operation',
+        introMessages: [
+            'Intelligence reports alien data cache in this sector.',
+            'Recover the encrypted data before they can transmit it.',
+            'Collect all data orbs to complete the mission.'
+        ],
+        enemies: [
+            { item: EnemyTypes.scout, weight: 4 },
+            { item: EnemyTypes.sniper, weight: 2 },
+            { item: EnemyTypes.hunter, weight: 1 }
+        ],
+        spawnRate: 70,    // ← Más rápido que 100
+        maxEnemiesOnScreen: 6, // ← Más enemigos que 4
+        objective: 'collectData',
+        dataToCollect: 8, // Número de data orbs a recolectar
+        itemDropRate: 0.7, // ← AÑADE ESTO
+        image_name: 'bg_stars_orange',
+        endMessages: [
+            'Data successfully recovered!',
+            'Alien encryption protocols acquired.',
+            'Returning to base for analysis.'
+        ]
+    }),
+    createLevel(5, {
         name: 'Earths Orbital Siege',
         introMessages: ['The battle reaches home. All defense platforms are engaged.', 'Failure is not an option. Earth is counting on us.'],
         enemies: [
@@ -492,8 +517,9 @@ const Levels = [
         objective: 'elimination',
         enemiesToEliminate: 40,
         image_name: 'bg_stars_blue',
+        endMessages: ['Orbital defenses holding. Preparing for final engagement at Lunar Base.'],
     }),
-    createLevel(5, {
+    createLevel(6, {
         name: 'Last Stand at Lunar Base',
         introMessages: ['Command is gone. We are the last organized resistance.', 'They are deploying their elite guard. This is for all the marbles.'],
         enemies: [
@@ -507,8 +533,9 @@ const Levels = [
         objective: 'elimination',
         enemiesToEliminate: 50,
         image_name: 'bg_stars_red',
+        endMessages: ['Lunar Base secured. All systems point to Hive Queen location. Final assault imminent.'],
     }),
-    createLevel(6, {
+    createLevel(7, {
         name: 'The Heart of the Swarm',
         introMessages: ['There it is... the Hive Queen. The source of the invasion.', 'One shot, one kill. End this war now.'],
         enemies: [
@@ -520,6 +547,7 @@ const Levels = [
         enemiesToEliminate: 1, //boss only
         image_name: 'bg_ion',
         lastLevel: true,
+        endMessages: ['Hive Queen destroyed. Swarm disorganized. Earth is safe... for now.'],
     }),
 ];
 
@@ -719,6 +747,24 @@ const ShieldPowerupTask = createTask({
     }
 });
 
+const FreezedTask = createTask({
+    name: 'Freezed',
+    duration: Infinity,
+    powerup: true,
+    onStart: function (entity) {
+        this.entity = entity;
+        this.entity.removeTask(EntityMoveTask.name);
+        this.r = this.entity.on('pre-render', () => {
+            let pos = this.entity.center();
+            DrawManager.fillCircle(pos.x, pos.y, this.entity.width * 1, { color: '#6dbefc11' });
+        });
+    },
+    onComplete: function () {
+        this.r.remove();
+        this.d.remove();
+    }
+});
+
 const TripleShotPowerupTask = createTask({
     name: 'Triple Shot',
     duration: 450,
@@ -812,14 +858,15 @@ const BombPowerupTask = createTask({
     onStart: function (entity) {
         GamePlayScreen.enemies.forEach((enemy) => {
             enemy.emit('damage-received');
+            enemy.emit('enemy-destroyed');
             enemy.dead = true; // Marca a todos los enemigos como muertos
         });
     }
 });
 
-const TimeSlowPowerupTask = createTask({
-    name: 'Time Slow',
-    duration: 300, // Duración del efecto
+const FreezePowerupTask = createTask({
+    name: 'Freeze',
+    duration: 600, // Duración del efecto
     powerup: true,
     onStart: function (entity) {
         this.entity = entity;
@@ -827,11 +874,7 @@ const TimeSlowPowerupTask = createTask({
             // Cada vez que se crea una bala, añade un evento de colisión para drenar vida
             data.bullets.forEach((bullet) => {
                 bullet.on('bullet-hit', ({ damage, target }) => {
-                    // Ralentiza el objetivo al ser golpeado
-                    if (target.timeSlowApplied) return; // Ya aplicado
-                    target.timeSlowApplied = true;
-                    target.acceleration *= 0.5;
-                    console.log('Time Slow activated on target!');
+                    target.addTask(FreezedTask.create(target));
                 });
             });
         });
@@ -881,7 +924,7 @@ const StartScreen = new BaseScreen({
     input: function (type, code) {
         if (type == 'keydown') {
             AudioManager.playLoop('bg');
-            ScreenManager.change('load', { images: IMAGE_LIST });
+            ScreenManager.change('load');
         }
     },
     render: function () {
@@ -893,9 +936,9 @@ const StartScreen = new BaseScreen({
 });
 
 const LoadScreen = new BaseScreen({
-    enter: function ({ images = [] }) {
+    enter: function () {
 
-        ImageManager.init(images);
+        ImageManager.init(IMAGE_LIST);
 
         ImageManager.load(() => {
             console.log('All images loaded');
@@ -962,7 +1005,7 @@ const MenuScreen = new BaseScreen({
 
         this.bg.render();
 
-        DrawManager.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT, { color: 'rgba(100,100,100,0.3)' });
+        DrawManager.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT, { color: 'rgba(100,100,100,0.1)' });
 
         // DrawManager.fillText(`${GAME_TITLE}`, GAME_WIDTH * 0.5, GAME_HEIGHT * 0.1, { size: 40, align: 'center', bold: true });
 
@@ -1024,7 +1067,9 @@ const IntroScreen = new BaseScreen({
 
 const GameOverScreen = new BaseScreen({
     enter: function (data = {}) {
-        this.score = data.score;
+
+        //get score from GameData
+        this.score = Object.values(GameState.levelsCompleted).reduce((acc, level) => acc + level.score, 0);
     },
     input: function (type, code) {
         if (type == 'keydown') {
@@ -1036,9 +1081,29 @@ const GameOverScreen = new BaseScreen({
     render: function () {
         DrawManager.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT, { color: BG_COLOR });
 
-        DrawManager.fillText('Game Over!', GAME_WIDTH * 0.5, GAME_HEIGHT * 0.5, { size: 30, align: 'center' });
-        DrawManager.fillText(`Last Score: ${this.score}`, GAME_WIDTH * 0.5, GAME_HEIGHT * 0.5 + 40, { align: 'center' });
-        DrawManager.fillText('Back to Menu (Escape)', GAME_WIDTH * 0.5, GAME_HEIGHT - 40, { align: 'center' });
+        DrawManager.fillText('Game Over!', GAME_WIDTH * 0.5, GAME_HEIGHT * 0.5, { size: 30, align: 'center', color: 'red' });
+        DrawManager.fillText(`Last Score: ${this.score}`, GAME_WIDTH * 0.5, GAME_HEIGHT * 0.5 + 40, { align: 'center', color: 'white' });
+        DrawManager.fillText('Back to Menu (Escape)', GAME_WIDTH * 0.5, GAME_HEIGHT - 40, { align: 'center', color: 'white' });
+    }
+});
+
+const GameEndScreen = new BaseScreen({
+    enter: function (data = {}) {
+        this.score = Object.values(GameState.levelsCompleted).reduce((acc, level) => acc + level.score, 0);
+    },
+    input: function (type, code) {
+        if (type == 'keydown') {
+            if (code == 'Escape') {
+                ScreenManager.change('menu');
+            }
+        }
+    },
+    render: function () {
+        DrawManager.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT, { color: BG_COLOR });
+
+        DrawManager.fillText('Congratulations! You completed the game!', GAME_WIDTH * 0.5, GAME_HEIGHT * 0.5, { size: 30, align: 'center', color: 'yellow' });
+        DrawManager.fillText(`Total Score: ${this.score}`, GAME_WIDTH * 0.5, GAME_HEIGHT * 0.5 + 40, { align: 'center', color: 'white' });
+        DrawManager.fillText('Back to Menu (Escape)', GAME_WIDTH * 0.5, GAME_HEIGHT - 40, { align: 'center', color: 'white' });
     }
 });
 
@@ -1136,6 +1201,122 @@ const GamePauseScreen = new BaseScreen({
     }
 });
 
+//testing level select screen
+const OtherLevelSelectScreen = new BaseScreen({
+    enter: function (data = {}) {
+
+        this.bg = bgBuilder(ImageManager.get('bg_intro'), 0.5);
+
+        // 6 levels, last is boss
+        // id, name, unlocked
+        this.levels = Levels.map((level) => {
+            return {
+                id: level.id,
+                name: `Level ${level.id}: ${level.name}`,
+                unlocked: GameState.levelsUnlocked[level.id] || false,
+                finished: (GameState.levelsCompleted[level.id] || { completed: false, score: 0 }).completed,
+                image_name: level.image_name,
+                x: level.x,
+                y: level.y,
+            };
+        });
+
+        //selected level is last unlocked level or first level
+        this.selectedLevel = data.nextLevel || 1;
+
+        for (let i = 0; i < this.levels.length; i++) {
+            if (this.levels[i].unlocked) {
+                this.selectedLevel = this.levels[i].id;
+            }
+        }
+
+        if (this.selectedLevel >= this.levels.length) {
+            this.selectedLevel = 1;
+        }
+    },
+    input: function (type, code) {
+        if (type == 'keydown') {
+
+            //escape to menu
+            if (code == 'Escape') {
+                ScreenManager.change('menu');
+            }
+
+            //up/down to select level
+            if (code == 'ArrowLeft') {
+                AudioManager.play('menu');
+                this.selectedLevel--;
+                if (this.selectedLevel < 1) this.selectedLevel = this.levels.length;
+            }
+            if (code == 'ArrowRight') {
+                AudioManager.play('menu');
+                this.selectedLevel++;
+                if (this.selectedLevel > this.levels.length) this.selectedLevel = 1;
+            }
+
+            if (code == 'Enter') {
+                if (!this.levels[this.selectedLevel - 1].unlocked) {
+                    return; //level locked
+                }
+                AudioManager.play('menu');
+                GameScreenManager.change('game_play', {
+                    level: {
+                        ...Levels[this.selectedLevel - 1]
+                    },
+                });
+            }
+        }
+    },
+    render: function () {
+        DrawManager.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT, { color: BG_COLOR });
+        this.bg.render();
+
+        let circleWidth = 120;
+
+        //level positions
+        //scatered
+        let levelPositions = [
+            { x: 100, y: 400 },
+            { x: 300, y: 100 },
+            { x: 500, y: 400 },
+            { x: 700, y: 100 },
+            { x: 900, y: 400 },
+            { x: 1100, y: 100 },
+        ];
+
+        //draw line between levels
+        for (let i = 0; i < levelPositions.length - 1; i++) {
+            let start = levelPositions[i];
+            let end = levelPositions[i + 1];
+            let color = (this.levels[i].unlocked && this.levels[i + 1].unlocked) ? 'white' : 'black';
+            DrawManager.drawLine(start.x + circleWidth / 2, start.y + circleWidth / 2, end.x + circleWidth / 2, end.y + circleWidth / 2, { color: color, width: 2 });
+        }
+
+        //for each level, draw a circle with level background image inside
+        this.levels.forEach((level, index) => {
+            let selected = (this.selectedLevel - 1) == index;
+            let color = level.unlocked ? 'gray' : 'black';
+            if (level.finished) {
+                color = 'white';
+            }
+            if (selected) {
+                color = 'blue';
+            }
+            let x = levelPositions[index].x;
+            let y = levelPositions[index].y;
+            DrawManager.drawImage(ImageManager.get(level.image_name), { x: x, y: y, width: circleWidth, height: circleWidth }, { x: 0, y: 0, width: 256, height: 256 }, { circle: color });
+        });
+
+        //draw only selected level
+        DrawManager.fillText(`${this.levels[this.selectedLevel - 1].name}`, GAME_WIDTH * 0.5, GAME_HEIGHT - 150, { size: 30, align: 'center' });
+        //show score if selected level is finished
+        if (this.levels[this.selectedLevel - 1].finished) {
+            DrawManager.fillText(`Completed`, GAME_WIDTH * 0.5, GAME_HEIGHT - 110, { align: 'center' });
+        }
+        DrawManager.fillText('Back (Escape)', GAME_WIDTH * 0.5, GAME_HEIGHT * 0.9, { align: 'center' });
+    },
+});
+
 const LevelSelectScreen = new BaseScreen({
     enter: function (data = {}) {
 
@@ -1148,7 +1329,7 @@ const LevelSelectScreen = new BaseScreen({
                 id: level.id,
                 name: `Level ${level.id}: ${level.name}`,
                 unlocked: GameState.levelsUnlocked[level.id] || false,
-                finished: (GameState.levelsCompleted[level.id] || false),
+                finished: (GameState.levelsCompleted[level.id] || { completed: false, score: 0 }).completed,
             };
         });
 
@@ -1209,10 +1390,10 @@ const LevelSelectScreen = new BaseScreen({
             let selected = (this.selectedLevel - 1) == index;
             let color = level.unlocked ? 'white' : 'gray';
             if (level.finished) {
-                color = 'lightgreen';
+                color = 'blue';
             }
             let name = selected ? `> ${level.name} <` : level.name;
-            DrawManager.fillText(name, GAME_WIDTH * 0.5, GAME_HEIGHT * 0.3 + (index * 40), { color: color, align: 'center' });
+            DrawManager.fillText(name, GAME_WIDTH * 0.5, GAME_HEIGHT * 0.3 + (index * 40), { color: color, align: 'center', shadow: true });
         });
 
 
@@ -1249,6 +1430,10 @@ const GamePlayScreen = new BaseScreen({
         value: 0,
         limit: 240,
     },
+    endTimer: {
+        value: 0,
+        limit: 180,
+    },
 
     player: null,
     enemies: [],
@@ -1258,11 +1443,15 @@ const GamePlayScreen = new BaseScreen({
     texts: [],
     particles: [],
     score: 0,
+    completed: false,
 
     enemySpawnTimer: {
         value: 0,
         limit: 90,
     },
+
+    //to check level duration
+    duration: 0,
 
     spawnEnemy: function (_e) {
         if (this.completed) return;
@@ -1327,6 +1516,7 @@ const GamePlayScreen = new BaseScreen({
             if (this.level.objective == 'elimination') {
                 this.level.enemiesToEliminate--;
             }
+            this.score += e.score;
         });
 
         this.enemies.push(e);
@@ -1441,6 +1631,8 @@ const GamePlayScreen = new BaseScreen({
 
     checkLevelComplete: function () {
         if (this.completed) return;
+
+        //elimination objective
         if (this.level.objective == 'elimination') {
             //check if all enemies eliminated
             if (this.level.enemiesToEliminate <= 0) {
@@ -1448,6 +1640,7 @@ const GamePlayScreen = new BaseScreen({
             }
         }
 
+        //survival objective
         if (this.level.objective == 'survival') {
             //change time limit to frames
             this.level.timeLimit--;
@@ -1457,6 +1650,16 @@ const GamePlayScreen = new BaseScreen({
                 this.levelCompleted();
             }
         }
+
+        //collectData objective
+        if (this.level.objective == 'collectData') {
+            //check if all data collected
+
+            if (this.level.dataToCollect <= 0) {
+                this.levelCompleted();
+            }
+        }
+
     },
 
     levelCompleted: function () {
@@ -1464,7 +1667,10 @@ const GamePlayScreen = new BaseScreen({
 
         console.log('Level Complete!');
         GameState.levelsUnlocked[this.level.id + 1] = true;
-        GameState.levelsCompleted[this.level.id] = true;
+        GameState.levelsCompleted[this.level.id] = {
+            completed: true,
+            score: this.score,
+        };
         saveGame();
 
         this.enemySpawnTimer.limit = Infinity;
@@ -1497,10 +1703,13 @@ const GamePlayScreen = new BaseScreen({
         this.player.friction = 1;
         this.player.removeTask(PlayerControllerTask.name);
 
+    },
+
+    warpOut: function () {
         setTimeout(() => {
             AudioManager.play('warpout');
             this.player.vy = -5;
-        }, 1000);
+        }, 10);
     },
 
     changeLevel: function () {
@@ -1513,14 +1722,19 @@ const GamePlayScreen = new BaseScreen({
         GameScreenManager.change('game_level_completed', {
             score: this.score,
             level: this.level,
+            //duration in seconds
+            duration: Math.floor(this.duration / 60),
         });
     },
 
     enter: function (data) {
         console.log(`Starting level: ${data.level.id} - ${data.level.name} (${data.level.objective})`);
         this.level = data.level;
+        this.introTimer.limit = 120 + (this.level.introMessages.length * 60);
         this.introTimer.value = 0;
+        this.endTimer.value = 0;
         this.score = 0;
+        this.duration = 0;
         this.completed = false;
 
         this.enemySpawnTimer.value = 0;
@@ -1544,11 +1758,11 @@ const GamePlayScreen = new BaseScreen({
             friction: 0.8,
             weapon: PlayerWeapon(),
             speed: makeAttribute(5),
+            bombs: 0,
         });
 
         this.player.addTask(PlayerControllerTask.create());
         this.player.addTask(EntityMoveTask.create());
-
 
         this.player.sprite = new Sprite(ImageManager.get('ship_blue'), {
             frames: 0,
@@ -1587,7 +1801,14 @@ const GamePlayScreen = new BaseScreen({
         this.player.on('score-collected', (data) => {
             this.score += data.score;
             this.showText(`+${data.score} Score`, 120);
-            AudioManager.play('powerup');
+
+            if (this.level.objective == 'collectData') {
+                this.level.dataToCollect--;
+            }
+        });
+
+        this.player.on('defeat', () => {
+            ScreenManager.change('gameover');
         });
 
         this.player.centerTo({ x: GAME_WIDTH * 0.5 });
@@ -1607,7 +1828,7 @@ const GamePlayScreen = new BaseScreen({
                 cheat.l2.remove();
                 delete cheat.l2;
                 this.player.sprite = new Sprite(ImageManager.get('ship_blue'), {
-                    frames: 4,
+                    frames: 0,
                     frameRate: 5,
                 });
             } else {
@@ -1638,7 +1859,7 @@ const GamePlayScreen = new BaseScreen({
             this.player.addTask(RapidFirePowerupTask.create(this.player));
             this.player.addTask(LifeDrainPowerupTask.create(this.player));
             this.player.addTask(BombPowerupTask.create(this.player));
-            this.player.addTask(TimeSlowPowerupTask.create(this.player));
+            this.player.addTask(FreezePowerupTask.create(this.player));
         });
         //HEALME cheat
         CheatManager.register('healme', (cheat) => {
@@ -1651,16 +1872,33 @@ const GamePlayScreen = new BaseScreen({
     input: function (type, code, event) {
 
         if (type == 'keydown') {
+            if (code == 'Escape') GameScreenManager.push('game_pause');
             if (event.key) {
                 CheatManager.input(event.key);
             }
-            if (code == 'Escape') GameScreenManager.push('game_pause');
+
+            if (code == 'Enter') {
+                //skip intro gracefully
+                if (this.introTimer.value < this.introTimer.limit) {
+                    this.introTimer.value = this.introTimer.limit - 60;
+                }
+            }
+
+            if (code == 'KeyB') {
+                if (this.player.bombs > 0) {
+                    this.player.addTask(BombPowerupTask.create());
+                    this.player.bombs -= 1;
+                }
+            }
+
         }
 
         //check cheats
     },
 
     update: function () {
+
+        this.duration++;
 
         CheatManager.update();
 
@@ -1681,6 +1919,18 @@ const GamePlayScreen = new BaseScreen({
         if (this.introTimer.value < this.introTimer.limit) {
             this.introTimer.value++;
             return;
+        }
+
+        if (this.completed) {
+            //move player slowly to center x based on this.endTimer.value
+            let targetX = GAME_WIDTH * 0.5 - this.player.width * 0.5;
+            this.player.x += (targetX - this.player.x) * 0.1;
+
+            if (this.endTimer.value < this.endTimer.limit) {
+                this.endTimer.value++;
+            } else {
+                this.warpOut();
+            }
         }
 
         if (KeyManager.isDown('Space')) this.playerFire();
@@ -1713,9 +1963,7 @@ const GamePlayScreen = new BaseScreen({
                 }
 
                 if (this.player.hp <= 0) {
-                    ScreenManager.change('gameover', {
-                        score: this.score,
-                    });
+                    this.player.emit('defeat');
                 }
             }
         });
@@ -1758,12 +2006,11 @@ const GamePlayScreen = new BaseScreen({
                         AudioManager.play('explosion');
                         e.emit('enemy-destroyed');
                         e.dead = true;
-                        this.score += e.score; // ← AÑADIDO, GRACIAS DEEPSEEK!
 
                         //spawn item
                         let chance = Utils.randomDouble(0, 1);
 
-                        if (chance < ITEM_SPAWN_CHANCE) {
+                        if (chance < this.level.itemDropRate) {
                             this.spawnItem(e.center());
                         }
                     }
@@ -1783,7 +2030,6 @@ const GamePlayScreen = new BaseScreen({
 
             if (Utils.collision(b, this.player)) {
                 b.dead = true;
-
                 let evt = {
                     damage: b.damage,
                 }
@@ -1797,9 +2043,7 @@ const GamePlayScreen = new BaseScreen({
                 }
 
                 if (this.player.hp <= 0) {
-                    ScreenManager.change('gameover', {
-                        score: this.score,
-                    });
+                    this.player.emit('defeat');
                 }
             }
         });
@@ -1885,11 +2129,32 @@ const GamePlayScreen = new BaseScreen({
             return;
         }
 
+        if (this.level.endMessages && this.completed) {
+
+            let alpha = 1.0;
+            if (this.endTimer.value < 60) {
+                alpha = this.endTimer.value / 60;
+            } else if (this.endTimer.value > this.endTimer.limit - 60) {
+                alpha = (this.endTimer.limit - this.endTimer.value) / 60;
+            }
+
+            this.level.endMessages.forEach((msg, index) => {
+                //yellow
+                DrawManager.fillText(msg, GAME_WIDTH * 0.5, GAME_HEIGHT * 0.4 + index * 30, { size: 24, align: 'center', color: `rgba(255,255,0,${alpha})` });
+            });
+        }
+
         let offsetY = 10;
         DrawManager.fillText(`HP: ${this.player.hp}/${this.player.maxHp}`, 10, offsetY, { color: 'yellow', size: 24 });
         offsetY += 25;
         DrawManager.fillText(`Score: ${this.score}`, 10, offsetY, { color: 'yellow', size: 24 });
         offsetY += 25;
+        //draw bombs
+        DrawManager.fillText(`Bombs: ${this.player.bombs}`, 10, offsetY, { color: 'yellow', size: 24 });
+        offsetY += 30;
+        //level duration in seconds: right
+        let durationSeconds = Math.floor(this.duration / 60);
+        DrawManager.fillText(`Time: ${durationSeconds}s`, GAME_WIDTH - 10, 10, { align: 'right', color: 'yellow', size: 24 });
 
         //level objective
         let levelObjective = '';
@@ -1901,6 +2166,11 @@ const GamePlayScreen = new BaseScreen({
             let secondsLeft = Math.ceil(this.level.timeLimit / 60);
             levelObjective = `Time Left: ${secondsLeft}s`;
         }
+
+        if (this.level.objective == 'collectData') {
+            levelObjective = `Data Left: ${this.level.dataToCollect}`;
+        }
+
         DrawManager.fillText(levelObjective, GAME_WIDTH / 2, 10, { align: 'center', color: 'yellow', size: 24 });
 
 
@@ -1924,8 +2194,6 @@ const GamePlayScreen = new BaseScreen({
 
 //game state management
 let GameState = {
-    highScore: 0,
-    score: 0,
     levelsUnlocked: {
         1: true,
     },
@@ -1939,14 +2207,16 @@ function saveGame() {
 function loadGame() {
     let data = localStorage.getItem('nebula_defender_save');
     if (data) {
-        GameState = JSON.parse(data);
+        GameState = {
+            ...GameState,
+            ...JSON.parse(data),
+        };
     }
     saveGame(); //save again to ensure structure
 }
 
 function resetGame() {
     GameState = {
-        score: 0,
         levelsUnlocked: {
             1: true,
         },
@@ -1962,7 +2232,10 @@ function completeGame() {
     }, {});
 
     GameState.levelsCompleted = Levels.reduce((acc, level) => {
-        acc[level.id] = true;
+        acc[level.id] = {
+            completed: true,
+            score: 0,
+        };
         return acc;
     }, {});
 
@@ -1972,6 +2245,7 @@ function completeGame() {
 const IMAGE_LIST = [
     //ships
     { name: 'ship_yellow', src: 'assets/images/ships/ship_yellow.png' },
+    { name: 'ship_yellow2', src: 'assets/images/ships/ship_yellow2.png' },
     { name: 'ship_blue', src: 'assets/images/ships/ship_blue.png' },
     { name: 'ship_gray', src: 'assets/images/ships/ship_gray.png' },
     { name: 'ship_green', src: 'assets/images/ships/ship_green.png' },
@@ -1980,8 +2254,8 @@ const IMAGE_LIST = [
     { name: 'ship_red', src: 'assets/images/ships/ship_red.png' },
     { name: 'ship_white', src: 'assets/images/ships/ship_white.png' },
     { name: 'ship_brown', src: 'assets/images/ships/ship_brown.png' },
-    { name: 'ship_pale', src: 'assets/images/ships/ship_pale.png' },
-    { name: 'Dove', src: 'assets/images/ships/Dove2.png' },
+    //not in use ships
+    { name: 'Dove', src: 'assets/images/ships/Dove.png' },
     { name: 'Ligher', src: 'assets/images/ships/Ligher.png' },
     { name: 'Ninja', src: 'assets/images/ships/Ninja.png' },
 
@@ -2049,14 +2323,15 @@ function init() {
 
     ScreenManager.add('start', StartScreen);
     ScreenManager.add('load', LoadScreen);
-    ScreenManager.add('load', LoadScreen);
     ScreenManager.add('menu', MenuScreen);
     ScreenManager.add('intro', IntroScreen);
     ScreenManager.add('gameover', GameOverScreen);
+    ScreenManager.add('game_end', GameEndScreen);
     ScreenManager.add('settings', SettingScreen);
     ScreenManager.add('game', GameScreen);
 
     GameScreenManager.add('game_level_select', LevelSelectScreen);
+    // GameScreenManager.add('game_level_select', OtherLevelSelectScreen);
     GameScreenManager.add('game_play', GamePlayScreen);
     GameScreenManager.add('game_pause', GamePauseScreen);
     GameScreenManager.add('game_level_completed', LevelCompletedScreen);

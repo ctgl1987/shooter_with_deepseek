@@ -6,16 +6,33 @@ const DrawManager = {
     init: function (c) {
         this._c = c;
     },
+    drawLine: function (x1, y1, x2, y2, { color = 'white', width = 1 } = {}) {
+        this._c.strokeStyle = color;
+        this._c.lineWidth = width;
+        this._c.beginPath();
+        this._c.moveTo(x1, y1);
+        this._c.lineTo(x2, y2);
+        this._c.stroke();
+    },
     fillRect: function (x, y, w, h, { color = 'white' } = {}) {
         this._c.fillStyle = color;
         this._c.fillRect(x, y, w, h);
     },
-    fillText: function (t, x, y, { color = 'white', size = 24, align = 'left', baseline = 'top', bold = false } = {}) {
+    fillText: function (t, x, y, { color = 'white', size = 24, align = 'left', baseline = 'top', bold = false, shadow = true } = {}) {
+        if (shadow) {
+            this._c.shadowColor = 'black';
+            this._c.shadowBlur = 4;
+            this._c.shadowOffsetX = 2;
+            this._c.shadowOffsetY = 2;
+        }
+
         this._c.fillStyle = color;
         this._c.font = `${bold ? 'bold ' : ''}${size}px monospace`;
         this._c.textAlign = align;
         this._c.textBaseline = baseline;
         this._c.fillText(t, x, y);
+
+        this._c.shadowColor = 'transparent';
 
     },
     fillCircle: function (x, y, r, { color = 'white' } = {}) {
@@ -24,7 +41,31 @@ const DrawManager = {
         this._c.arc(x, y, r, 0, 2 * Math.PI);
         this._c.fill();
     },
-    drawImage: function (img, dst = {}, src = {}, { rotate = 0, pulse = null } = {}) {
+    drawImage: function (img, dst = {}, src = {}, { rotate = 0, pulse = null, circle = false } = {}) {
+
+        //if circle is defined, set a circular clipping region
+        //with stroke white border
+        if (circle) {
+            this._c.save();
+            this._c.beginPath();
+            this._c.arc(dst.x + dst.width / 2, dst.y + dst.height / 2, Math.min(dst.width, dst.height) / 2, 0, 2 * Math.PI);
+            this._c.closePath();
+            this._c.clip();
+
+            this._drawImageInternal(img, dst, src);
+
+            //draw white border
+            this._c.strokeStyle = circle;
+            this._c.lineWidth = 2;
+            this._c.beginPath();
+            this._c.arc(dst.x + dst.width / 2, dst.y + dst.height / 2, Math.min(dst.width, dst.height) / 2 - 1, 0, 2 * Math.PI);
+            this._c.closePath();
+            this._c.stroke();
+
+            this._c.restore();
+            return;
+        }
+
         //rotate is in degrees
         this._c.save();
         if (rotate != 0) {
