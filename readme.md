@@ -1,6 +1,6 @@
 # 🏆 Nebula Defender - Resumen de Desarrollo
 
-![Estado](https://img.shields.io/badge/ESTADO-98%_COMPLETADO-brightgreen)
+![Estado](https://img.shields.io/badge/ESTADO-98%25_COMPLETADO-brightgreen)
 ![JavaScript](https://img.shields.io/badge/JavaScript-ES6+-yellow)
 ![HTML5](https://img.shields.io/badge/HTML5-Game-orange)
 
