@@ -477,7 +477,7 @@ const Levels = [
         maxEnemiesOnScreen: 5,
         objective: 'survival',
         timeLimit: 120 * 60,
-        image_name: 'bg_stars_green',
+        image_name: 'bg_stars_orange',
         endMessages: ['Transports have cleared Mars orbit. Heading back to Earth.'],
     }),
     createLevel(4, {
@@ -497,7 +497,7 @@ const Levels = [
         objective: 'collectData',
         dataToCollect: 8, // Número de data orbs a recolectar
         itemDropRate: 0.7, // ← AÑADE ESTO
-        image_name: 'bg_stars_orange',
+        image_name: 'bg_stars_green',
         endMessages: [
             'Data successfully recovered!',
             'Alien encryption protocols acquired.',
@@ -532,7 +532,7 @@ const Levels = [
         maxEnemiesOnScreen: 7,
         objective: 'elimination',
         enemiesToEliminate: 50,
-        image_name: 'bg_stars_red',
+        image_name: 'bg_stars_red', // MOON??
         endMessages: ['Lunar Base secured. All systems point to Hive Queen location. Final assault imminent.'],
     }),
     createLevel(7, {
@@ -747,23 +747,6 @@ const ShieldPowerupTask = createTask({
     }
 });
 
-const FreezedTask = createTask({
-    name: 'Freezed',
-    duration: Infinity,
-    powerup: true,
-    onStart: function (entity) {
-        this.entity = entity;
-        this.entity.removeTask(EntityMoveTask.name);
-        this.r = this.entity.on('pre-render', () => {
-            let pos = this.entity.center();
-            DrawManager.fillCircle(pos.x, pos.y, this.entity.width * 1, { color: '#6dbefc11' });
-        });
-    },
-    onComplete: function () {
-        this.r.remove();
-        this.d.remove();
-    }
-});
 
 const TripleShotPowerupTask = createTask({
     name: 'Triple Shot',
@@ -881,6 +864,26 @@ const FreezePowerupTask = createTask({
     },
     onComplete: function () {
         this.l.remove();
+    }
+});
+
+//effect tasks
+
+const FreezedTask = createTask({
+    name: 'Freezed',
+    duration: Infinity,
+    powerup: true,
+    onStart: function (entity) {
+        this.entity = entity;
+        this.entity.removeTask(EntityMoveTask.name);
+        this.r = this.entity.on('pre-render', () => {
+            let pos = this.entity.center();
+            DrawManager.fillCircle(pos.x, pos.y, this.entity.width * 1, { color: '#6dbefc11' });
+        });
+    },
+    onComplete: function () {
+        this.r.remove();
+        this.d.remove();
     }
 });
 
@@ -2359,18 +2362,26 @@ function update() {
 }
 
 function render() {
-
     ScreenManager.render();
 }
 
-function loop() {
+let lastTime = 0;
+
+function loop(t) {
 
     update();
 
     render();
 
-    requestAnimationFrame(() => {
-        loop();
+    let deltaTime = t - (lastTime || t);
+    lastTime = t;
+
+    let fps = Utils.getFps(deltaTime);
+    //show fps bottom right
+    DrawManager.fillText(`FPS: ${Math.floor(fps)}`, GAME_WIDTH - 10, GAME_HEIGHT - 10, { align: 'right', baseline: 'bottom', color: 'white' });
+
+    requestAnimationFrame((t) => {
+        loop(t);
     });
 }
 

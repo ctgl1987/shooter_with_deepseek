@@ -258,7 +258,10 @@ const Utils = {
 
         // Fallback (should rarely happen due to floating point precision)
         return items[items.length - 1].item;
-    }
+    },
+    getFps: function (deltaTime) {
+        return 1000 / deltaTime;
+    },
 };
 
 const FSM = function (name = 'default') {
