@@ -1907,7 +1907,7 @@ const GamePlayScreen = new BaseScreen({
 
         this.redFlash.update();
 
-        if (this.player.bottom() < -50) {
+        if (this.completed && this.player.bottom() < -50) {
             this.changeLevel();
             return;
         }
