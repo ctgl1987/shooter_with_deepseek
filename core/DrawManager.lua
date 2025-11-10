@@ -1,22 +1,20 @@
 local DrawManager = {}
 
 function DrawManager:init()
-    self.fonts = {
-        small = love.graphics.newFont(12),
-        medium = love.graphics.newFont(16),
-        large = love.graphics.newFont(24),
-        xlarge = love.graphics.newFont(30)
-    }
-
     -- Colores predefinidos
     self.colors = {
-        white = {1, 1, 1},
-        black = {0, 0, 0},
-        red = {1, 0, 0},
-        green = {0, 1, 0},
-        blue = {0, 0, 1},
-        yellow = {1, 1, 0},
-        gray = {0.5, 0.5, 0.5}
+        white = { 1, 1, 1 },
+        black = { 0, 0, 0 },
+        red = { 1, 0, 0 },
+        green = { 0, 1, 0 },
+        blue = { 0, 0, 1 },
+        yellow = { 1, 1, 0 },
+        gray = { 0.5, 0.5, 0.5 },
+        --more colors can be added here
+        purple = { 0.5, 0, 0.5 },
+        orange = { 1, 0.65, 0 },
+        cyan = { 0, 1, 1 },
+        magenta = { 1, 0, 1 }
     }
 end
 
@@ -55,7 +53,13 @@ function DrawManager:fillText(text, x, y, options)
     local shadow = options.shadow or true
 
     -- Crear fuente con alta calidad
-    local font = love.graphics.newFont(size)
+    -- local font = love.graphics.newFont("assets/fonts/slkscr.ttf",size)
+    -- local font = love.graphics.newFont("assets/fonts/sprint-2.otf",size)
+    -- local font = love.graphics.newFont("assets/fonts/BoldPixels.ttf",size)
+    -- local font = love.graphics.newFont("assets/fonts/PressStart2P-Regular.ttf",size)
+    -- local font = love.graphics.newFont("assets/fonts/GNF.ttf", size)
+    local font = love.graphics.newFont("assets/fonts/Nihonium113-Console.ttf", size)
+    -- local font = love.graphics.newFont(size)
     font:setFilter("linear", "linear", 4)
     love.graphics.setFont(font)
 
@@ -95,7 +99,7 @@ function DrawManager:fillText(text, x, y, options)
         -- Parsear rgba string si es necesario
         local r, g, b, a = color:match("rgba%((%d+),(%d+),(%d+),(%d+.?%d*)%)")
         if a then
-            mainAlpha = tonumber(a)
+            mainAlpha = tonumber(a) or 0
         end
     end
 
@@ -104,7 +108,7 @@ function DrawManager:fillText(text, x, y, options)
 
     -- Dibujar sombra (si está habilitada y tiene alpha > 0)
     if shadow and shadowAlpha > 0 then
-        love.graphics.setColor(0, 0, 0, shadowAlpha) -- Negro con alpha
+        love.graphics.setColor(0, 0, 0, shadowAlpha)    -- Negro con alpha
         love.graphics.print(text, drawX + 1, drawY + 1) -- Offset de sombra
     end
 

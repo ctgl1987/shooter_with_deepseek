@@ -2,21 +2,20 @@ local BaseScreen = require("core.BaseScreen")
 
 local LevelSelectScreen = BaseScreen:new({
     name = "game_level_select",
-    
+
     enter = function(self, data)
-        
         self.bg = Utils.createScrollingBackground(ImageManager:get("bg_intro"), 0)
         self.levels = {}
-        
+
         for i, level in ipairs(Levels.list) do
             table.insert(self.levels, {
                 id = level.id,
                 name = "Level " .. level.id .. ": " .. level.name,
                 unlocked = GameState.levelsUnlocked[level.id] or false,
-                finished = (GameState.levelsCompleted[level.id] or {completed = false}).completed
+                finished = (GameState.levelsCompleted[level.id] or { completed = false }).completed
             })
         end
-        
+
         self.selectedLevel = data and data.nextLevel or 1
         for i, level in ipairs(self.levels) do
             if level.unlocked then
@@ -24,7 +23,7 @@ local LevelSelectScreen = BaseScreen:new({
             end
         end
     end,
-    
+
     input = function(self, eventType, key)
         if eventType == "keydown" then
             if key == "back" then
@@ -41,39 +40,47 @@ local LevelSelectScreen = BaseScreen:new({
                 local level = self.levels[self.selectedLevel]
                 if level.unlocked then
                     AudioManager:play("menu")
+                    local selectedLevel = Utils.deepCopy(Levels.list[self.selectedLevel])
                     GameScreenManager:change("game_play", {
-                        level = Levels.list[self.selectedLevel]
+                        level = selectedLevel
                     })
                 end
             end
         end
     end,
-    
+
     update = function(self, dt)
         InputManager:setContext("menu")
         self.bg:update(dt)
     end,
-    
+
     render = function(self)
         self.bg:render()
-        
-        DrawManager:fillText("Select Level", GAME_WIDTH * 0.5, GAME_HEIGHT * 0.1, 
-                           {size = 30, align = "center"})
-        
+
+        -- Draw semi-transparent overlay
+        DrawManager:fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT, {color = {0, 0, 0, 0.5}})
+
+        DrawManager:fillText("Select Level", GAME_WIDTH * 0.5, GAME_HEIGHT * 0.1,
+            { size = 30, align = "center" })
+
         for i, level in ipairs(self.levels) do
             local selected = self.selectedLevel == i
             local color = level.unlocked and "white" or "gray"
             if level.finished then
-                color = "blue"
+                color = "green"
             end
-            
+
             local name = selected and "> " .. level.name .. " <" or level.name
-            DrawManager:fillText(name, GAME_WIDTH * 0.5, GAME_HEIGHT * 0.3 + (i * 40), 
-                               {color = color, align = "center", shadow = true})
+            DrawManager:fillText(name, GAME_WIDTH * 0.5, GAME_HEIGHT * 0.3 + (i * 40), {
+                color = color,
+                align = "center",
+                shadow = true
+            })
         end
-        
-        DrawManager:fillText("Back (Escape or Button B)", GAME_WIDTH * 0.5, GAME_HEIGHT * 0.9, 
-                           {align = "center"})
+
+        DrawManager:fillText("Back (Escape or Button B)", GAME_WIDTH * 0.5, GAME_HEIGHT * 0.9, {
+            align = "center"
+        })
     end
 })
 

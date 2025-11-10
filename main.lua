@@ -3,7 +3,7 @@ GAME_WIDTH = 1280
 GAME_HEIGHT = 720
 ENTITY_SIZE = 48
 ITEM_SPAWN_CHANCE = 0.3
-BG_COLOR = {0.04, 0, 0.13}
+BG_COLOR = { 0.04, 0, 0.13 }
 
 -- Textos de objetivos
 ObjectivesText = {
@@ -13,19 +13,31 @@ ObjectivesText = {
 }
 
 GAME_TITLE = "Astra Defiant"
-GAME_BRIEF = {"THE YEAR IS 2154.", "HUMANITY'S GOLDEN AGE OF SPACE EXPLORATION", "HAS COME TO A SUDDEN, VIOLENT END.",
-              "", "THE XENOTYPES - AN ANCIENT SWARM INTELLIGENCE -",
-              "HAVE AWAKENED. THEY CONSUME WORLDS, LEAVE ONLY DUST.", "",
-              "EARTH'S FLEET HAS FALLEN. COLONIES ARE SILENT.", "", "YOU ARE THE LAST ACTIVE FIGHTER OF THE",
-              "ORBITAL DEFENSE INITIATIVE - CODENAME: 'DEFIANT'.", "", "YOUR MISSION: HOLD THE LINE AT THE SOLAR GATE,",
-              "THE FINAL BARRIER BETWEEN THE SWARM AND EARTH.", "", "SURVIVE. ENDURE. DEFY."}
+GAME_BRIEF = {
+    "THE YEAR IS 2154.",
+    "HUMANITY'S GOLDEN AGE OF SPACE EXPLORATION",
+    "HAS COME TO A SUDDEN, VIOLENT END.",
+    "",
+    "THE XENOTYPES - AN ANCIENT SWARM INTELLIGENCE -",
+    "HAVE AWAKENED. THEY CONSUME WORLDS, LEAVE ONLY DUST.",
+    "",
+    "EARTH'S FLEET HAS FALLEN. COLONIES ARE SILENT.",
+    "",
+    "YOU ARE THE LAST ACTIVE FIGHTER OF THE",
+    "ORBITAL DEFENSE INITIATIVE - CODENAME: 'DEFIANT'.",
+    "",
+    "YOUR MISSION: HOLD THE LINE AT THE SOLAR GATE,",
+    "THE FINAL BARRIER BETWEEN THE SWARM AND EARTH.",
+    "",
+    "SURVIVE. ENDURE. DEFY." 
+}
 
 -- Lista completa de imágenes
 IMAGE_LIST = { -- ships
-{
-    name = 'ship_yellow',
-    src = 'assets/images/ships/ship_yellow.png'
-}, {
+    {
+        name = 'ship_yellow',
+        src = 'assets/images/ships/ship_yellow.png'
+    }, {
     name = 'ship_yellow2',
     src = 'assets/images/ships/ship_yellow2.png'
 }, {
@@ -53,20 +65,20 @@ IMAGE_LIST = { -- ships
     name = 'ship_brown',
     src = 'assets/images/ships/ship_brown.png'
 }, -- not in use ships
-{
-    name = 'Dove',
-    src = 'assets/images/ships/Dove.png'
-}, {
+    {
+        name = 'Dove',
+        src = 'assets/images/ships/Dove.png'
+    }, {
     name = 'Ligher',
     src = 'assets/images/ships/Ligher.png'
 }, {
     name = 'Ninja',
     src = 'assets/images/ships/Ninja.png'
 }, -- orbs
-{
-    name = 'orb_yellow',
-    src = 'assets/images/items/orb_yellow.png'
-}, {
+    {
+        name = 'orb_yellow',
+        src = 'assets/images/items/orb_yellow.png'
+    }, {
     name = 'orb_blue',
     src = 'assets/images/items/orb_blue.png'
 }, {
@@ -94,10 +106,10 @@ IMAGE_LIST = { -- ships
     name = 'orb_pink',
     src = 'assets/images/items/orb_pink.png'
 }, -- bg
-{
-    name = 'bg_title',
-    src = 'assets/images/bg/bg_title.png'
-}, {
+    {
+        name = 'bg_title',
+        src = 'assets/images/bg/bg_title.png'
+    }, {
     name = 'bg_intro',
     src = 'assets/images/bg/bg_intro.png'
 }, {
@@ -128,10 +140,10 @@ IMAGE_LIST = { -- ships
     name = 'bg_stars_green',
     src = 'assets/images/bg/bg_stars_green.png'
 }, -- items (power-ups)
-{
-    name = 'Item_Powerup_18',
-    src = 'assets/images/items/Item_Powerup_18.png'
-}, {
+    {
+        name = 'Item_Powerup_18',
+        src = 'assets/images/items/Item_Powerup_18.png'
+    }, {
     name = 'Item_Powerup_26',
     src = 'assets/images/items/Item_Powerup_26.png'
 }, {
@@ -152,18 +164,18 @@ IMAGE_LIST = { -- ships
 }, {
     name = 'Item_Box_Gem_0',
     src = 'assets/images/items/Item_Box_Gem_0.png'
-},{
+}, {
     name = 'data_cache',
     src = 'assets/images/items/data_cache.png'
 },
-{
-    name = 'energy_shield',
-    src = 'assets/images/items/energy_shield.png'
-},
+    {
+        name = 'energy_shield',
+        src = 'assets/images/items/energy_shield.png'
+    },
 }
 
 -- Lista completa de sonidos (usaremos placeholders)
-SOUND_LIST = {{
+SOUND_LIST = { {
     name = "shoot",
     src = "assets/sounds/effects/shot.wav"
 }, {
@@ -184,48 +196,51 @@ SOUND_LIST = {{
 }, {
     name = "warpout",
     src = "assets/sounds/effects/warpout.ogg"
-}}
+} }
 
-local canvas = nil
+local canvas = nil -- Canvas for rendering
+local scale = 1
 local scaleX, scaleY = 1, 1
 local offsetX, offsetY = 0, 0
 
 function love.load()
     math.randomseed(os.time())
 
-    currentShader = nil
+    SetupViewport()
+
+    CurrentShader = nil
 
     -- >>> AGREGAR: Definir el shader neon global <<<
-    neonShader = love.graphics.newShader([[
+    NeonShader = love.graphics.newShader([[
         extern number neonIntensity = 0.8;
         extern number time;
-        
+
         vec4 effect(vec4 color, Image texture, vec2 texture_coords, vec2 screen_coords) {
             vec4 pixel = Texel(texture, texture_coords);
-            
+
             // Efecto de brillo neon
             float brightness = (pixel.r + pixel.g + pixel.b) / 3.0;
             float pulse = sin(time * 3.0) * 0.1 + 0.9; // Parpadeo sutil
-            
+
             // Aumentar saturación y contraste
             vec3 boosted = pixel.rgb * (1.0 + neonIntensity * 0.5);
             boosted = mix(pixel.rgb, boosted, neonIntensity);
-            
+
             // Aplicar el pulso
             boosted *= pulse;
-            
+
             return vec4(boosted, pixel.a);
         }
     ]])
 
-    strongNeonShader = love.graphics.newShader([[
+    StrongNeonShader = love.graphics.newShader([[
         extern number neonIntensity = 1.2;
         extern number time;
         extern vec3 glowColor = vec3(0.3, 0.5, 1.0);
-        
+
         vec4 effect(vec4 color, Image texture, vec2 texture_coords, vec2 screen_coords) {
             vec4 pixel = Texel(texture, texture_coords);
-            
+
             // Detectar bordes y áreas brillantes
             float edge = 0.0;
             for (int x = -1; x <= 1; x++) {
@@ -238,20 +253,24 @@ function love.load()
                 }
             }
             edge = clamp(edge * 2.0, 0.0, 1.0);
-            
+
             // Combinar color original con glow
             vec3 finalColor = mix(pixel.rgb, glowColor, edge * neonIntensity);
             float alpha = max(pixel.a, edge * 0.3);
-            
+
             // Efecto de pulso sutil
             float pulse = sin(time * 4.0) * 0.05 + 0.95;
             finalColor *= pulse;
-            
+
             return vec4(finalColor, alpha);
         }
     ]])
 
-    currentShader = neonShader
+    CurrentShader = NeonShader
+
+    Json = require("lib.json")
+
+    Serpent = require("serpent")
 
     -- Cargar módulos core y asignarlos a variables globales
     DrawManager = require("core.DrawManager")
@@ -299,44 +318,37 @@ function love.load()
     ImageManager:init(IMAGE_LIST)
 
     -- >>> AGREGAR: Inicialización del gamepad <<<
-    gamepad = nil
+
+    CurrenttGamepad = nil
     local joysticks = love.joystick.getJoysticks()
     if #joysticks > 0 then
-        gamepad = joysticks[1]
-        print("Gamepad conectado: " .. gamepad:getName())
+        CurrenttGamepad = joysticks[1]
+        print("Gamepad conectado: " .. CurrenttGamepad:getName())
     end
 
     -- Cargar estado del juego
-    GameState = loadGame() or {
-        levelsUnlocked = {
-            [1] = true
-        },
-        levelsCompleted = {}
-    }
+    LoadGame()
 
-    -- Configurar FSM principal
     ScreenManager = FSM:new("main")
     GameScreenManager = FSM:new("game")
 
-    setupScreens()
+    SetupScreens()
 
     ScreenManager:change("start")
-
-    setupViewport()
 end
 
 -- >>> AGREGAR: Estas nuevas funciones de eventos <<<
 function love.joystickadded(joystick)
     print("Gamepad conectado: " .. joystick:getName())
-    if gamepad == nil then
-        gamepad = joystick
+    if CurrenttGamepad == nil then
+        CurrenttGamepad = joystick
     end
 end
 
 function love.joystickremoved(joystick)
     print("Gamepad desconectado: " .. joystick:getName())
-    if gamepad == joystick then
-        gamepad = nil
+    if CurrenttGamepad == joystick then
+        CurrenttGamepad = nil
     end
 end
 
@@ -344,12 +356,15 @@ function love.update(dt)
     ScreenManager:update(dt)
 
     -- >>> AGREGAR: Actualizar tiempo en el shader <<<
-    if neonShader then
-        neonShader:send("time", love.timer.getTime())
+    if CurrentShader then
+        CurrentShader:send("time", love.timer.getTime())
     end
 end
 
 function love.draw()
+    if canvas == nil then
+        return
+    end
 
     -- Dibujar todo en el canvas
     love.graphics.setCanvas(canvas)
@@ -372,19 +387,24 @@ function love.draw()
     -- Dibujar el canvas escalado en la ventana
     -- love.graphics.setColor(1, 1, 1)
     -- >>> FASE 2: Aplicar shader al canvas escalado <<<
-    -- love.graphics.setShader(currentShader)
+    -- love.graphics.setShader(CurrentShader)
     love.graphics.draw(canvas, offsetX, offsetY, 0, scale, scale)
     love.graphics.setShader()
 end
 
 function love.keypressed(key)
     if key == "f11" then
-        toggleFullscreen()
+        ToggleFullscreen()
+        return
+    end
+
+    if key == "f10" then
+        DebugGameState()
         return
     end
 
     if key == "f9" then
-        currentShader = (currentShader == neonShader) and strongNeonShader or neonShader
+        CurrentShader = (CurrentShader == NeonShader) and StrongNeonShader or NeonShader
         return
     end
 
@@ -401,7 +421,7 @@ end
 
 -- >>> AGREGAR: Manejo de botones presionados <<<
 function love.gamepadpressed(joystick, button)
-    if joystick == gamepad then
+    if joystick == CurrenttGamepad then
         local b = "button_" .. button
         local action = InputManager:getActionForKey(b)
         KeyManager:keypressed(action)
@@ -411,7 +431,7 @@ end
 
 -- >>> AGREGAR: Manejo de botones liberados <<<
 function love.gamepadreleased(joystick, button)
-    if joystick == gamepad then
+    if joystick == CurrenttGamepad then
         local b = "button_" .. button
         local action = InputManager:getActionForKey(b)
         KeyManager:keyreleased(action)
@@ -420,11 +440,11 @@ function love.gamepadreleased(joystick, button)
 end
 
 function love.resize(w, h)
-    updateViewport()
+    UpdateViewport()
 end
 
 -- Configuración de pantallas
-function setupScreens()
+function SetupScreens()
     -- Pantallas principales
     ScreenManager:add("start", StartScreen)
     ScreenManager:add("load", LoadScreen)
@@ -443,59 +463,48 @@ function setupScreens()
 end
 
 -- Sistema de guardado simplificado
-function loadGame()
-    if love.filesystem.getInfo("savegame.lua") then
-        local success, chunk = pcall(love.filesystem.load, "savegame.lua")
-        if success and chunk then
-            return chunk()
+function LoadGame()
+    print("LoadGame: " .. love.filesystem.getSaveDirectory())
+    if love.filesystem.getInfo("savegame.json") then
+        print("Archivo de guardado encontrado. Cargando...")
+
+        local data = love.filesystem.read("savegame.json")
+        local success, gameState = pcall(Json.decode, data)
+        if success and gameState then
+            GameState = gameState
+            return
         end
+    else
+        print("No se encontró archivo de guardado.")
+        -- Si no existe el archivo, crear uno por defecto
+        ResetGame()
     end
-
-    -- Si no existe el archivo, crear uno por defecto
-    return {
-        levelsUnlocked = {
-            [1] = true
-        },
-        levelsCompleted = {}
-    }
 end
 
-function saveGame()
-    -- Crear una representación simple del estado del juego
-    local data = "return {\n"
-    data = data .. "  levelsUnlocked = {\n"
-    for levelId, unlocked in pairs(GameState.levelsUnlocked) do
-        data = data .. "    [" .. levelId .. "] = " .. tostring(unlocked) .. ",\n"
-    end
-    data = data .. "  },\n"
-    data = data .. "  levelsCompleted = {\n"
-    for levelId, levelData in pairs(GameState.levelsCompleted) do
-        data = data .. "    [" .. levelId .. "] = {completed = " .. tostring(levelData.completed) .. ", score = " ..
-                   (levelData.score or 0) .. "},\n"
-    end
-    data = data .. "  }\n"
-    data = data .. "}"
-
-    love.filesystem.write("savegame.lua", data)
-    print("Juego guardado en: " .. love.filesystem.getSaveDirectory())
+function SaveGame()
+    local data = Json.encode(GameState)
+    love.filesystem.write("savegame.json", data)
+    print("SaveGame: " .. love.filesystem.getSaveDirectory())
 end
 
-function resetGame()
+function ResetGame()
     GameState = {
         levelsUnlocked = {
             [1] = true
         },
         levelsCompleted = {}
     }
-    saveGame()
+    SaveGame()
 end
 
-function setupViewport()
-    canvas = love.graphics.newCanvas(GAME_WIDTH, GAME_HEIGHT)
-    updateViewport()
+function SetupViewport()
+    if not canvas then
+        canvas = love.graphics.newCanvas(GAME_WIDTH, GAME_HEIGHT)
+    end
+    UpdateViewport()
 end
 
-function updateViewport()
+function UpdateViewport()
     local windowWidth, windowHeight = love.graphics.getDimensions()
 
     -- Calcular escala manteniendo aspect ratio
@@ -508,10 +517,10 @@ function updateViewport()
     offsetY = (windowHeight - (GAME_HEIGHT * scale)) / 2
 end
 
-function toggleFullscreen()
-    isFullscreen = not isFullscreen
+function ToggleFullscreen()
+    IsFullscreen = not IsFullscreen
 
-    if isFullscreen then
+    if IsFullscreen then
         -- Entrar en pantalla completa
         local success = love.window.setFullscreen(true, "desktop")
         if success then
@@ -529,11 +538,11 @@ function toggleFullscreen()
     end
 
     -- Actualizar viewport
-    updateViewport()
+    UpdateViewport()
 end
 
 -- Función para debug
-function debugGameState()
+function DebugGameState()
     print("=== GAME STATE ===")
     print("Levels Unlocked:")
     for levelId, unlocked in pairs(GameState.levelsUnlocked) do
@@ -542,7 +551,7 @@ function debugGameState()
     print("Levels Completed:")
     for levelId, levelData in pairs(GameState.levelsCompleted) do
         print("  Level " .. levelId .. ": " .. tostring(levelData.completed) .. " (score: " .. (levelData.score or 0) ..
-                  ")")
+            ")")
     end
     print("==================")
 end

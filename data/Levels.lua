@@ -1,9 +1,9 @@
 local Levels = {}
 
-function createLevel(id, props)
+function CreateLevel(id, props)
     return {
         id = id,
-        name = props.name or "Level " .. id,
+        name = props.name or ("Level " .. id),
         introMessages = props.introMessages or {"Welcome to Level " .. id},
         enemies = props.enemies or {},
         spawnRate = props.spawnRate or 60,
@@ -20,7 +20,7 @@ function createLevel(id, props)
 end
 
 Levels.list = {
-    createLevel(1, {
+    CreateLevel(1, {
         name = "Breach in the Kuiper Belt",
         introMessages = {
             "Scanners detect unknown signatures at the edge of the system.",
@@ -32,11 +32,11 @@ Levels.list = {
         spawnRate = 90,
         maxEnemiesOnScreen = 3,
         objective = "elimination",
-        enemiesToEliminate = 20,
+        enemiesToEliminate = 3,
         image_name = "bg_asteroids",
         endMessages = {"Initial contact made. Prepare for escalating hostilities."},
     }),
-    createLevel(2, {
+    CreateLevel(2, {
         name = "The Outer Rim Offensive",
         introMessages = {
             "This is no scouting party. Full invasion force confirmed.",
@@ -53,7 +53,7 @@ Levels.list = {
         image_name = "bg_stars_purple",
         endMessages = {"Mars orbit reached. Prepare for next wave."},
     }),
-    createLevel(3, {
+    CreateLevel(3, {
         name = "The Martian Gauntlet",
         introMessages = {
             "Mars Colony is evacuating. We are their only cover.",
@@ -71,7 +71,7 @@ Levels.list = {
         image_name = "bg_stars_orange",
         endMessages = {"Transports have cleared Mars orbit. Heading back to Earth."},
     }),
-    createLevel(4, {
+    CreateLevel(4, {
         name = "Data Recovery Operation",
         introMessages = {
             "Intelligence reports alien data cache in this sector.",
@@ -95,7 +95,7 @@ Levels.list = {
             "Returning to base for analysis."
         }
     }),
-    createLevel(5, {
+    CreateLevel(5, {
         name = "Earths Orbital Siege",
         introMessages = {
             "The battle reaches home. All defense platforms are engaged.", 
@@ -113,7 +113,7 @@ Levels.list = {
         image_name = "bg_stars_blue",
         endMessages = {"Orbital defenses holding. Preparing for final engagement at Lunar Base."},
     }),
-    createLevel(6, {
+    CreateLevel(6, {
         name = "Last Stand at Lunar Base",
         introMessages = {
             "Command is gone. We are the last organized resistance.", 
@@ -132,7 +132,7 @@ Levels.list = {
         image_name = "bg_stars_red",
         endMessages = {"Lunar Base secured. All systems point to Hive Queen location. Final assault imminent."},
     }),
-    createLevel(7, {
+    CreateLevel(7, {
         name = "The Heart of the Swarm",
         introMessages = {
             "There it is... the Hive Queen. The source of the invasion.", 

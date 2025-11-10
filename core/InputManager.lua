@@ -36,14 +36,14 @@ end
 
 function InputManager:getActionForKey(key)
 
-    print("Checking action for key: " .. key .. " in context: " .. self.currentContext)
+    -- print("Checking action for key: " .. key .. " in context: " .. self.currentContext)
 
     local keyBindings = self.bindings[self.currentContext]
 
     for action, keys in pairs(keyBindings) do
         for _, k in ipairs(keys) do
             if k == key then
-                print("Action for key '" .. key .. "' is '" .. action .. "'")
+                -- print("Action for key '" .. key .. "' is '" .. action .. "'")
                 return action
             end
         end
