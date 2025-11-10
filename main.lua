@@ -512,7 +512,7 @@ function ToggleFullscreen()
         -- Entrar en pantalla completa
         local success = love.window.setFullscreen(true, "desktop")
         if success then
-            print("🖥️  Modo pantalla completa activado")
+            print("[]  Modo pantalla completa activado")
         end
     else
         -- Salir de pantalla completa
@@ -522,7 +522,7 @@ function ToggleFullscreen()
             minwidth = GAME_WIDTH,
             minheight = GAME_HEIGHT
         })
-        print("📺 Modo ventana activado")
+        print("[] Modo ventana activado")
     end
 
     -- Actualizar viewport

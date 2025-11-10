@@ -10,6 +10,8 @@ function AudioManager:init(soundList)
     end
 
     self:preloadAll()
+
+    print("> AudioManager inicializado con " .. #soundList .. " sonidos.")
 end
 
 function AudioManager:loadSound(soundData)
@@ -38,7 +40,7 @@ function AudioManager:loadSound(soundData)
         end
     end
 
-    print("> Cargado: " .. soundData.name .. " (pool: " .. poolSize .. ")")
+    -- print("> Cargado: " .. soundData.name .. " (pool: " .. poolSize .. ")")
 end
 
 function AudioManager:preloadAll()
@@ -141,13 +143,13 @@ function AudioManager:setMute(mute)
         end
     end
 
-    print(self.muted and "🔇 Audio silenciado" or "🔊 Audio activado")
+    print(self.muted and "X Audio silenciado" or "+ Audio activado")
 end
 
 function AudioManager:toggleMute()
     self:setMute(not self.muted)
 
-    print(self.muted and "🔇 Audio silenciado" or "🔊 Audio activado")
+    print(self.muted and "X Audio silenciado" or "+ Audio activado")
 end
 
 function AudioManager:isMuted()

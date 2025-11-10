@@ -368,7 +368,8 @@ local GamePlayScreen = BaseScreen:new({
             ttl = ttl,
             x = GAME_WIDTH / 2,
             y = GAME_HEIGHT - 30,
-            update = nil,
+            --transparent
+            color = { 0, 0, 0, 0 }
         })
 
         textEntity:on("post-update", function()
@@ -378,13 +379,13 @@ local GamePlayScreen = BaseScreen:new({
             end
         end)
 
-        textEntity:on("post-render", function()
+        textEntity.render = function(self, offsetX, offsetY)
             local alpha = textEntity.ttl / ttl
-            DrawManager:fillText(textEntity.text, textEntity.x, textEntity.y, {
-                color = { 1, 1, 0, alpha },
-                align = "center"
+            DrawManager:fillText(textEntity.text, textEntity.x + (offsetX or 0), textEntity.y + (offsetY or 0), {
+                align = "center",
+                color = { 1, 1, 1, alpha }
             })
-        end)
+        end
 
         table.insert(self.texts, textEntity)
     end,
