@@ -1,0 +1,162 @@
+local DrawManager = {}
+
+function DrawManager:init()
+    self.fonts = {
+        small = love.graphics.newFont(12),
+        medium = love.graphics.newFont(16),
+        large = love.graphics.newFont(24),
+        xlarge = love.graphics.newFont(30)
+    }
+
+    -- Colores predefinidos
+    self.colors = {
+        white = {1, 1, 1},
+        black = {0, 0, 0},
+        red = {1, 0, 0},
+        green = {0, 1, 0},
+        blue = {0, 0, 1},
+        yellow = {1, 1, 0},
+        gray = {0.5, 0.5, 0.5}
+    }
+end
+
+function DrawManager:setColor(color)
+    if type(color) == "string" then
+        love.graphics.setColor(self.colors[color] or self.colors.white)
+    else
+        love.graphics.setColor(color)
+    end
+end
+
+function DrawManager:drawLine(x1, y1, x2, y2, options)
+    options = options or {}
+    local color = options.color or "white"
+    local width = options.width or 1
+
+    self:setColor(color)
+    love.graphics.setLineWidth(width)
+    love.graphics.line(x1, y1, x2, y2)
+end
+
+function DrawManager:fillRect(x, y, w, h, options)
+    options = options or {}
+    local color = options.color or "white"
+
+    self:setColor(color)
+    love.graphics.rectangle("fill", x, y, w, h)
+end
+
+function DrawManager:fillText(text, x, y, options)
+    options = options or {}
+    local color = options.color or "white"
+    local size = options.size or 24
+    local align = options.align or "left"
+    local baseline = options.baseline or "top"
+    local shadow = options.shadow or true
+
+    -- Crear fuente con alta calidad
+    local font = love.graphics.newFont(size)
+    font:setFilter("linear", "linear", 4)
+    love.graphics.setFont(font)
+
+    -- Calcular dimensiones del texto
+    local textWidth = font:getWidth(text)
+    local textHeight = font:getHeight()
+    local descent = font:getDescent()
+
+    -- Ajustar posición horizontal
+    local drawX = x
+    if align == "center" then
+        drawX = x - textWidth / 2
+    elseif align == "right" then
+        drawX = x - textWidth
+    end
+
+    -- Ajustar posición vertical
+    local drawY = y
+    if baseline == "top" then
+        drawY = y
+    elseif baseline == "middle" then
+        drawY = y - textHeight / 2
+    elseif baseline == "bottom" then
+        drawY = y - textHeight
+    elseif baseline == "alphabetic" then
+        drawY = y - (textHeight - descent)
+    end
+
+    -- Extraer alpha del color principal
+    local mainAlpha = 1
+    local shadowAlpha = 1
+
+    -- Si el color tiene alpha, extraerlo
+    if type(color) == "table" and #color >= 4 then
+        mainAlpha = color[4] or 1
+    elseif type(color) == "string" and color:sub(1, 5) == "rgba(" then
+        -- Parsear rgba string si es necesario
+        local r, g, b, a = color:match("rgba%((%d+),(%d+),(%d+),(%d+.?%d*)%)")
+        if a then
+            mainAlpha = tonumber(a)
+        end
+    end
+
+    -- Calcular alpha del shadow (usar el mismo alpha que el texto principal)
+    shadowAlpha = mainAlpha
+
+    -- Dibujar sombra (si está habilitada y tiene alpha > 0)
+    if shadow and shadowAlpha > 0 then
+        love.graphics.setColor(0, 0, 0, shadowAlpha) -- Negro con alpha
+        love.graphics.print(text, drawX + 1, drawY + 1) -- Offset de sombra
+    end
+
+    -- Dibujar texto principal (solo si tiene alpha > 0)
+    if mainAlpha > 0 then
+        self:setColor(color) -- Esto manejará el alpha del color principal
+        love.graphics.print(text, drawX, drawY)
+    end
+end
+
+function DrawManager:fillCircle(x, y, radius, options)
+    options = options or {}
+    local color = options.color or "white"
+
+    self:setColor(color)
+    love.graphics.circle("fill", x, y, radius)
+end
+
+function DrawManager:drawImage(img, dst, src, options)
+    options = options or {}
+    local rotate = options.rotate or 0
+    local pulse = options.pulse or nil
+
+    -- Calcular dimensiones y escala base
+    local imgWidth, imgHeight = img:getDimensions()
+    local scaleX = dst.width / imgWidth
+    local scaleY = dst.height / imgHeight
+
+    -- Variables para efectos de transformación
+    local pulseScaleX, pulseScaleY = scaleX, scaleY
+    local drawX, drawY = dst.x + (dst.width / 2), dst.y + (dst.height / 2)
+    local ox, oy = imgWidth * 0.5, imgHeight * 0.5
+
+    -- Aplicar efecto pulse si está presente
+    if pulse and pulse.amplitude and pulse.speed then
+        local time = love.timer.getTime() -- Tiempo actual en segundos
+        local scaleFactor = 1 + math.sin(time * pulse.speed) * pulse.amplitude
+
+        -- Aplicar el escalado del pulse
+        pulseScaleX = scaleX * scaleFactor
+        pulseScaleY = scaleY * scaleFactor
+    end
+
+    love.graphics.setColor(1, 1, 1)
+
+    -- Dibujar la imagen con todas las transformaciones
+    if src and src.x then
+        local quad = love.graphics.newQuad(src.x, src.y, src.width, src.height, imgWidth, imgHeight)
+        love.graphics.draw(img, quad, drawX, drawY, math.rad(rotate), pulseScaleX, pulseScaleY, ox, oy)
+    else
+        love.graphics.draw(img, drawX, drawY, math.rad(rotate), pulseScaleX, pulseScaleY, ox, oy)
+    end
+end
+
+return DrawManager

@@ -41,30 +41,7 @@ const DrawManager = {
         this._c.arc(x, y, r, 0, 2 * Math.PI);
         this._c.fill();
     },
-    drawImage: function (img, dst = {}, src = {}, { rotate = 0, pulse = null, circle = false } = {}) {
-
-        //if circle is defined, set a circular clipping region
-        //with stroke white border
-        if (circle) {
-            this._c.save();
-            this._c.beginPath();
-            this._c.arc(dst.x + dst.width / 2, dst.y + dst.height / 2, Math.min(dst.width, dst.height) / 2, 0, 2 * Math.PI);
-            this._c.closePath();
-            this._c.clip();
-
-            this._drawImageInternal(img, dst, src);
-
-            //draw white border
-            this._c.strokeStyle = circle;
-            this._c.lineWidth = 2;
-            this._c.beginPath();
-            this._c.arc(dst.x + dst.width / 2, dst.y + dst.height / 2, Math.min(dst.width, dst.height) / 2 - 1, 0, 2 * Math.PI);
-            this._c.closePath();
-            this._c.stroke();
-
-            this._c.restore();
-            return;
-        }
+    drawImage: function (img, dst = {}, src = {}, { rotate = 0, pulse = null } = {}) {
 
         //rotate is in degrees
         this._c.save();
@@ -162,6 +139,7 @@ const AudioManager = {
             for (let i = 0; i < pool.length; i++) {
                 let sound = pool[i];
                 if (sound.currentTime == 0 || sound.ended) {
+                    console.log('Playing sound:', name);
                     sound.play().catch(console.log);
                     break;
                 }

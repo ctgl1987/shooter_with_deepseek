@@ -441,7 +441,7 @@ const Levels = [
         spawnRate: 90,
         maxEnemiesOnScreen: 3,
         objective: 'elimination',
-        enemiesToEliminate: 20,
+        enemiesToEliminate: 3,
         image_name: 'bg_asteroids',
         endMessages: ['Initial contact made. Prepare for escalating hostilities.'],
     }),
@@ -1447,6 +1447,7 @@ const GamePlayScreen = new BaseScreen({
     particles: [],
     score: 0,
     completed: false,
+    warped: false,
 
     enemySpawnTimer: {
         value: 0,
@@ -1491,10 +1492,7 @@ const GamePlayScreen = new BaseScreen({
                 max: e.maxHp,
                 x: e.x,
                 y: e.y,
-                width: e.width,
             });
-
-
         });
 
         e.addTask(EntityMoveTask.create());
@@ -1709,6 +1707,8 @@ const GamePlayScreen = new BaseScreen({
     },
 
     warpOut: function () {
+        if (this.warped) return;
+        this.warped = true;
         setTimeout(() => {
             AudioManager.play('warpout');
             this.player.vy = -5;
@@ -1882,7 +1882,7 @@ const GamePlayScreen = new BaseScreen({
 
             if (code == 'Enter') {
                 //skip intro gracefully
-                if (this.introTimer.value < this.introTimer.limit) {
+                if (this.introTimer.value < this.introTimer.limit && this.introTimer.value + 60 < this.introTimer.limit) {
                     this.introTimer.value = this.introTimer.limit - 60;
                 }
             }
