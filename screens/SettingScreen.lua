@@ -12,6 +12,8 @@ local SettingScreen = BaseScreen:new({
                 end,
                 action = function()
                     AudioManager:toggleMute()
+                    GameState.sound = not AudioManager:isMuted()
+                    SaveGame()
                 end
             }
         })
