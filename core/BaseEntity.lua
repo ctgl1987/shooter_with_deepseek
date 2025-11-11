@@ -14,7 +14,7 @@ function BaseEntity:new(p)
     entity.vx = p.vx or 0
     entity.vy = p.vy or 0
     entity.friction = p.friction or 1
-    entity.acceleration = p.acceleration or 1
+    entity.speed = p.speed or 1
     entity.color = p.color or {1, 1, 1}
     entity.dead = p.dead or false
     entity.hp = p.hp or 1

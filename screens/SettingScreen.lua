@@ -15,6 +15,16 @@ local SettingScreen = BaseScreen:new({
                     GameState.sound = not AudioManager:isMuted()
                     SaveGame()
                 end
+            },
+            {
+                name = function() 
+                    return "Fullscreen: " .. (GameState.fullscreen and "ON" or "OFF")
+                end,
+                action = function()
+                    GameState.fullscreen = not GameState.fullscreen
+                    SetFullScreen(GameState.fullscreen)
+                    SaveGame()
+                end
             }
         })
     end,

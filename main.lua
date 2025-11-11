@@ -191,78 +191,20 @@ local offsetX, offsetY = 0, 0
 
 local moonshine = require("lib.moonshine")
 
+local shaderEnabled = true
+
 function love.load()
     math.randomseed(os.time())
 
     SetupViewport()
 
-    CrtEffect = moonshine.chain(moonshine.effects.crt)
-    CrtEffect.chain(moonshine.effects.scanlines)
+    CrtEffect = moonshine.chain(moonshine.effects.scanlines)
+    -- CrtEffect.chain(moonshine.effects.ctr)
     CrtEffect.chain(moonshine.effects.vignette)
 
     -- CrtEffect.scanlines.width = 1
     CrtEffect.scanlines.opacity = 0.1
     CrtEffect.vignette.radius = 1.2
-
-    CurrentShader = nil
-
-    -- >>> AGREGAR: Definir el shader neon global <<<
-    NeonShader = love.graphics.newShader([[
-        extern number neonIntensity = 0.8;
-        extern number time;
-
-        vec4 effect(vec4 color, Image texture, vec2 texture_coords, vec2 screen_coords) {
-            vec4 pixel = Texel(texture, texture_coords);
-
-            // Efecto de brillo neon
-            float brightness = (pixel.r + pixel.g + pixel.b) / 3.0;
-            float pulse = sin(time * 3.0) * 0.1 + 0.9; // Parpadeo sutil
-
-            // Aumentar saturación y contraste
-            vec3 boosted = pixel.rgb * (1.0 + neonIntensity * 0.5);
-            boosted = mix(pixel.rgb, boosted, neonIntensity);
-
-            // Aplicar el pulso
-            boosted *= pulse;
-
-            return vec4(boosted, pixel.a);
-        }
-    ]])
-
-    StrongNeonShader = love.graphics.newShader([[
-        extern number neonIntensity = 1.2;
-        extern number time;
-        extern vec3 glowColor = vec3(0.3, 0.5, 1.0);
-
-        vec4 effect(vec4 color, Image texture, vec2 texture_coords, vec2 screen_coords) {
-            vec4 pixel = Texel(texture, texture_coords);
-
-            // Detectar bordes y áreas brillantes
-            float edge = 0.0;
-            for (int x = -1; x <= 1; x++) {
-                for (int y = -1; y <= 1; y++) {
-                    if (x != 0 || y != 0) {
-                        vec2 offset = vec2(x, y) / love_ScreenSize.xy;
-                        vec4 neighbor = Texel(texture, texture_coords + offset);
-                        edge += length(pixel.rgb - neighbor.rgb);
-                    }
-                }
-            }
-            edge = clamp(edge * 2.0, 0.0, 1.0);
-
-            // Combinar color original con glow
-            vec3 finalColor = mix(pixel.rgb, glowColor, edge * neonIntensity);
-            float alpha = max(pixel.a, edge * 0.3);
-
-            // Efecto de pulso sutil
-            float pulse = sin(time * 4.0) * 0.05 + 0.95;
-            finalColor *= pulse;
-
-            return vec4(finalColor, alpha);
-        }
-    ]])
-
-    CurrentShader = NeonShader
 
     Json = require("lib.json")
 
@@ -325,7 +267,10 @@ function love.load()
     -- Cargar estado del juego
     LoadGame()
 
+    -- Aplicar configuración de sonido
     AudioManager:setMute(not GameState.sound)
+    -- Aplicar configuración de pantalla completa
+    SetFullScreen(GameState.fullscreen)
 
     ScreenManager = FSM:new("main")
     GameScreenManager = FSM:new("game")
@@ -352,11 +297,6 @@ end
 
 function love.update(dt)
     ScreenManager:update(dt)
-
-    -- >>> AGREGAR: Actualizar tiempo en el shader <<<
-    if CurrentShader then
-        CurrentShader:send("time", love.timer.getTime())
-    end
 end
 
 function love.draw()
@@ -390,10 +330,10 @@ function love.draw()
 end
 
 function love.keypressed(key)
-    if key == "f11" then
-        ToggleFullscreen()
-        return
-    end
+    -- if key == "f11" then
+    --     ToggleFullscreen()
+    --     return
+    -- end
 
     if key == "f10" then
         DebugGameState()
@@ -401,7 +341,16 @@ function love.keypressed(key)
     end
 
     if key == "f9" then
-        CurrentShader = (CurrentShader == NeonShader) and StrongNeonShader or NeonShader
+        --toogle shaders
+        if shaderEnabled then
+            CrtEffect:disable("crt", "scanlines", "vignette")
+            shaderEnabled = false
+            print("Shaders disabled")
+        else
+            CrtEffect:enable("crt", "scanlines", "vignette")
+            shaderEnabled = true
+            print("Shaders enabled")
+        end
         return
     end
 
@@ -486,6 +435,7 @@ end
 function ResetGame()
     GameState = {
         sound = false,
+        fullscreen = false,
         levelsUnlocked = {
             [1] = true
         },
@@ -514,10 +464,9 @@ function UpdateViewport()
     offsetY = (windowHeight - (GAME_HEIGHT * scale)) / 2
 end
 
-function ToggleFullscreen()
-    IsFullscreen = not IsFullscreen
-
-    if IsFullscreen then
+function SetFullScreen(enabled)
+    IsFullscreen = enabled
+    if enabled then
         -- Entrar en pantalla completa
         local success = love.window.setFullscreen(true, "desktop")
         if success then
@@ -536,6 +485,10 @@ function ToggleFullscreen()
 
     -- Actualizar viewport
     UpdateViewport()
+end
+
+function ToggleFullscreen()
+    SetFullScreen(not IsFullscreen)
 end
 
 -- Función para debug

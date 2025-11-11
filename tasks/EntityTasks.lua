@@ -9,8 +9,8 @@ local EntityMoveTask = TaskSystem:create({
     end,
     
     onUpdate = function(self, dt)
-        self.entity.x = self.entity.x + self.entity.vx * (self.entity.acceleration or 1)
-        self.entity.y = self.entity.y + self.entity.vy * (self.entity.acceleration or 1)
+        self.entity.x = self.entity.x + self.entity.vx * dt
+        self.entity.y = self.entity.y + self.entity.vy * dt
         
         self.entity.vx = self.entity.vx * (self.entity.friction or 1)
         self.entity.vy = self.entity.vy * (self.entity.friction or 1)
@@ -26,7 +26,7 @@ local PlayerControllerTask = TaskSystem:create({
     end,
     
     onUpdate = function(self, dt)
-        local speed = self.entity.speed or 5
+        local speed = self.entity.speed
         
         if KeyManager:isDown("left") then
             self.entity.vx = -speed
@@ -70,7 +70,7 @@ local EnemyFireTask = TaskSystem:create({
                 height = ENTITY_SIZE * 0.2,
                 color = {1, 0, 0},
                 damage = 1,
-                vy = ENTITY_SIZE / 8
+                vy = 360
             })
 
             bullet:centerTo({
@@ -102,7 +102,7 @@ local SideMovementTask = TaskSystem:create({
     
     onUpdate = function(self, dt)
         local time = love.timer.getTime() - self.startTime
-        self.entity.vx = math.sin(time * 2) * 2
+        self.entity.vx = math.sin(time * 2) * 120
     end
 })
 
@@ -197,10 +197,30 @@ local BossTask = TaskSystem:create({
     end
 })
 
+local KeepOnScreenTask = TaskSystem:create({
+    name = "KeepOnScreenTask",
+    duration = math.huge,
+    
+    onStart = function(self, entity)
+        self.entity = entity
+    end,
+    
+    onUpdate = function(self, dt)
+        if self.entity.x < 0 then
+            self.entity.x = 0
+            self.entity.vx = 0
+        elseif self.entity:right() > GAME_WIDTH then
+            self.entity.x = GAME_WIDTH - self.entity.width
+            self.entity.vx = 0
+        end
+    end
+})
+
 return {
     EntityMoveTask = EntityMoveTask,
     PlayerControllerTask = PlayerControllerTask,
     EnemyFireTask = EnemyFireTask,
     SideMovementTask = SideMovementTask,
-    BossTask = BossTask
+    BossTask = BossTask,
+    KeepOnScreenTask = KeepOnScreenTask
 }

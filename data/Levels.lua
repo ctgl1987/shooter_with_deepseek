@@ -27,7 +27,8 @@ Levels.list = {
             "Intercept and identify. Weapons free if hostile.",
         },
         enemies = {
-            {item = "scout", weight = 1},
+            -- {item = "scout", weight = 1},
+            {item = "hunter", weight = 1},
         },
         spawnRate = 90,
         maxEnemiesOnScreen = 3,

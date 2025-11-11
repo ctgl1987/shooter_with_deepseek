@@ -55,7 +55,7 @@ local GamePlayScreen = BaseScreen:new({
             hp = 10,
             maxHp = 10,
             friction = 0.8,
-            speed = 5,
+            speed = 300,
             bombs = 0
         })
 
@@ -113,7 +113,7 @@ local GamePlayScreen = BaseScreen:new({
 
     createBackground = function(self)
         local bgImage = ImageManager:get(self.level.image_name or "bg_space")
-        self.bg = Utils.createScrollingBackground(bgImage, 1)
+        self.bg = Utils.createScrollingBackground(bgImage, 60)
     end,
 
     setupCheats = function(self)
@@ -127,8 +127,10 @@ local GamePlayScreen = BaseScreen:new({
                 cheat.l2:remove()
                 cheat.l1 = nil
                 cheat.l2 = nil
+                self.player.sprite.image = ImageManager:get("ship_blue")
             else
                 print("God Mode Activated!")
+                self.player.sprite.image = ImageManager:get("ship_white")
                 cheat.l1 = self.player:on("damage-received", function(data)
                     data.damage = 0
                 end)
@@ -137,7 +139,7 @@ local GamePlayScreen = BaseScreen:new({
                     DrawManager:fillCircle(pos.x, pos.y, self.player.width * 1.5, {
                         color = { 1, 1, 0, 0.07 }
                     })
-                    DrawManager:fillText("GOD MODE", self.player.x + self.player.width * 0.5, self.player.y - 30, {
+                    DrawManager:fillText("GOD MODE", self.player:center().x, self.player.y - 50, {
                         color = "yellow",
                         align = "center"
                     })
@@ -234,11 +236,13 @@ local GamePlayScreen = BaseScreen:new({
                 max = enemy.maxHp,
                 x = enemy.x,
                 y = enemy.y,
+                width = enemy.width
             })
         end)
 
         enemy:addTask(EntityTasks.EntityMoveTask.create())
         enemy:addTask(EntityTasks.EnemyFireTask.create())
+        enemy:addTask(EntityTasks.KeepOnScreenTask.create())
 
         if template.build then
             template.build(enemy)
@@ -281,7 +285,7 @@ local GamePlayScreen = BaseScreen:new({
             height = ENTITY_SIZE * 0.2,
             color = { 1, 0, 0 },
             damage = 1,
-            vy = -ENTITY_SIZE / 8
+            vy = -360
         })
 
         bullet:centerTo({
@@ -312,7 +316,7 @@ local GamePlayScreen = BaseScreen:new({
         local item = BaseEntity:new({
             width = ENTITY_SIZE * 0.75,
             height = ENTITY_SIZE * 0.75,
-            vy = 2,
+            vy = 120,
             color = { 0, 0, 0, 0 } -- transparent
         })
 
@@ -399,8 +403,8 @@ local GamePlayScreen = BaseScreen:new({
                 width = ENTITY_SIZE * 0.05,
                 height = ENTITY_SIZE * 0.05,
                 color = { 1, 0.65, 0 }, -- orange
-                vx = math.random() * 4 - 2,
-                vy = math.random() * 4 - 2,
+                vx = Utils.randomInt(-100, 100),
+                vy = Utils.randomInt(-100, 100),
                 ttl = ttl
             })
 
@@ -486,7 +490,7 @@ local GamePlayScreen = BaseScreen:new({
             return
         end
         self.warped = true
-        self.player.vy = -5
+        self.player.vy = -300
         AudioManager:play("warpout")
     end,
 
