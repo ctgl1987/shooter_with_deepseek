@@ -3,7 +3,7 @@ GAME_WIDTH = 1280
 GAME_HEIGHT = 720
 ENTITY_SIZE = 48
 ITEM_SPAWN_CHANCE = 0.3
-BG_COLOR = {0.04, 0, 0.13}
+BG_COLOR = { 0.04, 0, 0.13 }
 
 -- Textos de objetivos
 ObjectivesText = {
@@ -13,19 +13,19 @@ ObjectivesText = {
 }
 
 GAME_TITLE = "Astra Defiant"
-GAME_BRIEF = {"THE YEAR IS 2154.", "HUMANITY'S GOLDEN AGE OF SPACE EXPLORATION", "HAS COME TO A SUDDEN, VIOLENT END.",
-              "", "THE XENOTYPES - AN ANCIENT SWARM INTELLIGENCE -",
-              "HAVE AWAKENED. THEY CONSUME WORLDS, LEAVE ONLY DUST.", "",
-              "EARTH'S FLEET HAS FALLEN. COLONIES ARE SILENT.", "", "YOU ARE THE LAST ACTIVE FIGHTER OF THE",
-              "ORBITAL DEFENSE INITIATIVE - CODENAME: 'DEFIANT'.", "", "YOUR MISSION: HOLD THE LINE AT THE SOLAR GATE,",
-              "THE FINAL BARRIER BETWEEN THE SWARM AND EARTH.", "", "SURVIVE. ENDURE. DEFY."}
+GAME_BRIEF = { "THE YEAR IS 2154.", "HUMANITY'S GOLDEN AGE OF SPACE EXPLORATION", "HAS COME TO A SUDDEN, VIOLENT END.",
+    "", "THE XENOTYPES - AN ANCIENT SWARM INTELLIGENCE -",
+    "HAVE AWAKENED. THEY CONSUME WORLDS, LEAVE ONLY DUST.", "",
+    "EARTH'S FLEET HAS FALLEN. COLONIES ARE SILENT.", "", "YOU ARE THE LAST ACTIVE FIGHTER OF THE",
+    "ORBITAL DEFENSE INITIATIVE - CODENAME: 'DEFIANT'.", "", "YOUR MISSION: HOLD THE LINE AT THE SOLAR GATE,",
+    "THE FINAL BARRIER BETWEEN THE SWARM AND EARTH.", "", "SURVIVE. ENDURE. DEFY." }
 
 -- Lista completa de imágenes
 IMAGE_LIST = { -- ships
-{
-    name = 'ship_yellow',
-    src = 'assets/images/ships/ship_yellow.png'
-}, {
+    {
+        name = 'ship_yellow',
+        src = 'assets/images/ships/ship_yellow.png'
+    }, {
     name = 'ship_yellow2',
     src = 'assets/images/ships/ship_yellow2.png'
 }, {
@@ -53,20 +53,20 @@ IMAGE_LIST = { -- ships
     name = 'ship_brown',
     src = 'assets/images/ships/ship_brown.png'
 }, -- not in use ships
-{
-    name = 'Dove',
-    src = 'assets/images/ships/Dove.png'
-}, {
+    {
+        name = 'Dove',
+        src = 'assets/images/ships/Dove.png'
+    }, {
     name = 'Ligher',
     src = 'assets/images/ships/Ligher.png'
 }, {
     name = 'Ninja',
     src = 'assets/images/ships/Ninja.png'
 }, -- orbs
-{
-    name = 'orb_yellow',
-    src = 'assets/images/items/orb_yellow.png'
-}, {
+    {
+        name = 'orb_yellow',
+        src = 'assets/images/items/orb_yellow.png'
+    }, {
     name = 'orb_blue',
     src = 'assets/images/items/orb_blue.png'
 }, {
@@ -94,10 +94,10 @@ IMAGE_LIST = { -- ships
     name = 'orb_pink',
     src = 'assets/images/items/orb_pink.png'
 }, -- bg
-{
-    name = 'bg_title',
-    src = 'assets/images/bg/bg_title.png'
-}, {
+    {
+        name = 'bg_title',
+        src = 'assets/images/bg/bg_title.png'
+    }, {
     name = 'bg_intro',
     src = 'assets/images/bg/bg_intro.png'
 }, {
@@ -128,10 +128,10 @@ IMAGE_LIST = { -- ships
     name = 'bg_stars_green',
     src = 'assets/images/bg/bg_stars_green.png'
 }, -- items (power-ups)
-{
-    name = 'Item_Powerup_18',
-    src = 'assets/images/items/Item_Powerup_18.png'
-}, {
+    {
+        name = 'Item_Powerup_18',
+        src = 'assets/images/items/Item_Powerup_18.png'
+    }, {
     name = 'Item_Powerup_26',
     src = 'assets/images/items/Item_Powerup_26.png'
 }, {
@@ -158,10 +158,10 @@ IMAGE_LIST = { -- ships
 }, {
     name = 'energy_shield',
     src = 'assets/images/items/energy_shield.png'
-}}
+} }
 
 -- Lista completa de sonidos (usaremos placeholders)
-SOUND_LIST = {{
+SOUND_LIST = { {
     name = "shoot",
     src = "assets/sounds/effects/shot.wav"
 }, {
@@ -182,17 +182,27 @@ SOUND_LIST = {{
 }, {
     name = "warpout",
     src = "assets/sounds/effects/warpout.ogg"
-}}
+} }
 
 local canvas = nil -- Canvas for rendering
 local scale = 1
 local scaleX, scaleY = 1, 1
 local offsetX, offsetY = 0, 0
 
+local moonshine = require("lib.moonshine")
+
 function love.load()
     math.randomseed(os.time())
 
     SetupViewport()
+
+    CrtEffect = moonshine.chain(moonshine.effects.crt)
+    CrtEffect.chain(moonshine.effects.scanlines)
+    CrtEffect.chain(moonshine.effects.vignette)
+
+    -- CrtEffect.scanlines.width = 1
+    CrtEffect.scanlines.opacity = 0.1
+    CrtEffect.vignette.radius = 1.2
 
     CurrentShader = nil
 
@@ -354,30 +364,29 @@ function love.draw()
         return
     end
 
-    -- Dibujar todo en el canvas
+    -- Dibujar en el canvas
     love.graphics.setCanvas(canvas)
+
+    -- Limpiar el canvas
     love.graphics.clear()
 
-    love.graphics.clear(0.04, 0, 0.13) -- BG_COLOR similar
-    ScreenManager:render()
-
-    -- Mostrar FPS
-    love.graphics.setColor(1, 1, 1)
-    -- fps on bottom right
-    DrawManager:fillText("FPS: " .. tostring(love.timer.getFPS()), GAME_WIDTH - 10, GAME_HEIGHT - 10, {
-        align = 'right',
-        baseline = 'bottom',
-        color = 'white'
-    })
+    CrtEffect(function()
+        -- Limpiar con color de fondo
+        love.graphics.clear(BG_COLOR)
+        -- Dibujar la pantalla
+        ScreenManager:render()
+        -- Mostrar FPS
+        DrawManager:fillText("FPS: " .. tostring(love.timer.getFPS()), GAME_WIDTH - 10, GAME_HEIGHT - 10, {
+            align = 'right',
+            baseline = 'bottom',
+            color = 'white'
+        })
+    end)
 
     love.graphics.setCanvas()
 
     -- Dibujar el canvas escalado en la ventana
-    -- love.graphics.setColor(1, 1, 1)
-    -- >>> FASE 2: Aplicar shader al canvas escalado <<<
-    -- love.graphics.setShader(CurrentShader)
     love.graphics.draw(canvas, offsetX, offsetY, 0, scale, scale)
-    love.graphics.setShader()
 end
 
 function love.keypressed(key)
@@ -539,7 +548,7 @@ function DebugGameState()
     print("Levels Completed:")
     for levelId, levelData in pairs(GameState.levelsCompleted) do
         print("  Level " .. levelId .. ": " .. tostring(levelData.completed) .. " (score: " .. (levelData.score or 0) ..
-                  ")")
+            ")")
     end
     print("==================")
 end
