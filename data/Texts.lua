@@ -1,0 +1,25 @@
+GAME_TITLE = "Astra Defiant"
+
+GAME_BRIEF = {
+    "THE YEAR IS 2154.",
+    "HUMANITY'S GOLDEN AGE OF SPACE EXPLORATION",
+    "HAS COME TO A SUDDEN, VIOLENT END.",
+    "", "THE XENOTYPES - AN ANCIENT SWARM INTELLIGENCE -",
+    "HAVE AWAKENED. THEY CONSUME WORLDS, LEAVE ONLY DUST.",
+    "",
+    "EARTH'S FLEET HAS FALLEN. COLONIES ARE SILENT.",
+    "",
+    "YOU ARE THE LAST ACTIVE FIGHTER OF THE",
+    "ORBITAL DEFENSE INITIATIVE - CODENAME: 'DEFIANT'.",
+    "",
+    "YOUR MISSION: HOLD THE LINE AT THE SOLAR GATE,",
+    "THE FINAL BARRIER BETWEEN THE SWARM AND EARTH.",
+    "",
+    "SURVIVE. ENDURE. DEFY."
+}
+
+GAME_OBJECTIVES = {
+    survival = "Survive the time limit",
+    elimination = "Eliminate all enemies",
+    collectData = "Collect all data caches"
+}

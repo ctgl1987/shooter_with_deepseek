@@ -19,10 +19,10 @@ const TEXT_SIZE = 20;
 
 const ITEM_SPAWN_CHANCE = 0.3; // 30% de probabilidad de que un enemigo suelte un ítem
 
-const ScreenManager = new FSM();
-const GameScreenManager = new FSM('game');
+const ScreenManager = new ScreenManager();
+const GameScreenManager = new ScreenManager('game');
 
-const ObjectivesText = {
+const GAME_OBJECTIVES = {
     survival: 'Survive the time limit',
     elimination: 'Eliminate all enemies',
     collectData: 'Collect all data caches',
@@ -2123,7 +2123,7 @@ const GamePlayScreen = new BaseScreen({
             DrawManager.fillText(`-- Level ${this.level.id}: ${this.level.name} --`, GAME_WIDTH * 0.5, introOffsetY, { size: 30, align: 'center', color: `rgba(255,255,0,${alpha})` });
             introOffsetY += 40;
 
-            let messages = [...(this.level.introMessages || [this.level.introMessage]), '', `Objective: ${ObjectivesText[this.level.objective]}`];
+            let messages = [...(this.level.introMessages || [this.level.introMessage]), '', `Objective: ${GAME_OBJECTIVES[this.level.objective]}`];
             messages.forEach((msg) => {
                 DrawManager.fillText(msg, GAME_WIDTH * 0.5, introOffsetY, { align: 'center', color: `rgba(255,255,255,${alpha})` });
                 introOffsetY += 30;

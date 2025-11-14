@@ -5,185 +5,6 @@ ENTITY_SIZE = 48
 ITEM_SPAWN_CHANCE = 0.3
 BG_COLOR = { 0.04, 0, 0.13 }
 
--- Textos de objetivos
-ObjectivesText = {
-    survival = "Survive the time limit",
-    elimination = "Eliminate all enemies",
-    collectData = "Collect all data caches"
-}
-
-GAME_TITLE = "Astra Defiant"
-GAME_BRIEF = { "THE YEAR IS 2154.", "HUMANITY'S GOLDEN AGE OF SPACE EXPLORATION", "HAS COME TO A SUDDEN, VIOLENT END.",
-    "", "THE XENOTYPES - AN ANCIENT SWARM INTELLIGENCE -",
-    "HAVE AWAKENED. THEY CONSUME WORLDS, LEAVE ONLY DUST.", "",
-    "EARTH'S FLEET HAS FALLEN. COLONIES ARE SILENT.", "", "YOU ARE THE LAST ACTIVE FIGHTER OF THE",
-    "ORBITAL DEFENSE INITIATIVE - CODENAME: 'DEFIANT'.", "", "YOUR MISSION: HOLD THE LINE AT THE SOLAR GATE,",
-    "THE FINAL BARRIER BETWEEN THE SWARM AND EARTH.", "", "SURVIVE. ENDURE. DEFY." }
-
--- Lista completa de imágenes
-IMAGE_LIST = { -- ships
-    {
-        name = 'ship_yellow',
-        src = 'assets/images/ships/ship_yellow.png'
-    }, {
-    name = 'ship_yellow2',
-    src = 'assets/images/ships/ship_yellow2.png'
-}, {
-    name = 'ship_blue',
-    src = 'assets/images/ships/ship_blue.png'
-}, {
-    name = 'ship_gray',
-    src = 'assets/images/ships/ship_gray.png'
-}, {
-    name = 'ship_green',
-    src = 'assets/images/ships/ship_green.png'
-}, {
-    name = 'ship_orange',
-    src = 'assets/images/ships/ship_orange.png'
-}, {
-    name = 'ship_purple',
-    src = 'assets/images/ships/ship_purple.png'
-}, {
-    name = 'ship_red',
-    src = 'assets/images/ships/ship_red.png'
-}, {
-    name = 'ship_white',
-    src = 'assets/images/ships/ship_white.png'
-}, {
-    name = 'ship_brown',
-    src = 'assets/images/ships/ship_brown.png'
-}, -- not in use ships
-    {
-        name = 'Dove',
-        src = 'assets/images/ships/Dove.png'
-    }, {
-    name = 'Ligher',
-    src = 'assets/images/ships/Ligher.png'
-}, {
-    name = 'Ninja',
-    src = 'assets/images/ships/Ninja.png'
-}, -- orbs
-    {
-        name = 'orb_yellow',
-        src = 'assets/images/items/orb_yellow.png'
-    }, {
-    name = 'orb_blue',
-    src = 'assets/images/items/orb_blue.png'
-}, {
-    name = 'orb_red',
-    src = 'assets/images/items/orb_red.png'
-}, {
-    name = 'orb_green',
-    src = 'assets/images/items/orb_green.png'
-}, {
-    name = 'orb_orange',
-    src = 'assets/images/items/orb_orange.png'
-}, {
-    name = 'orb_purple',
-    src = 'assets/images/items/orb_purple.png'
-}, {
-    name = 'orb_white',
-    src = 'assets/images/items/orb_white.png'
-}, {
-    name = 'orb_gray',
-    src = 'assets/images/items/orb_gray.png'
-}, {
-    name = 'orb_black',
-    src = 'assets/images/items/orb_black.png'
-}, {
-    name = 'orb_pink',
-    src = 'assets/images/items/orb_pink.png'
-}, -- bg
-    {
-        name = 'bg_title',
-        src = 'assets/images/bg/bg_title.png'
-    }, {
-    name = 'bg_intro',
-    src = 'assets/images/bg/bg_intro.png'
-}, {
-    name = 'bg_space',
-    src = 'assets/images/bg/bg_space_blue.jpg'
-}, {
-    name = 'bg_ice',
-    src = 'assets/images/bg/bg_ice.png'
-}, {
-    name = 'bg_ion',
-    src = 'assets/images/bg/bg_ion.png'
-}, {
-    name = 'bg_asteroids',
-    src = 'assets/images/bg/bg_asteroids.png'
-}, {
-    name = 'bg_stars_purple',
-    src = 'assets/images/bg/bg_stars_purple.png'
-}, {
-    name = 'bg_stars_blue',
-    src = 'assets/images/bg/bg_stars_blue.png'
-}, {
-    name = 'bg_stars_red',
-    src = 'assets/images/bg/bg_stars_red.png'
-}, {
-    name = 'bg_stars_orange',
-    src = 'assets/images/bg/bg_stars_orange.png'
-}, {
-    name = 'bg_stars_green',
-    src = 'assets/images/bg/bg_stars_green.png'
-}, -- items (power-ups)
-    {
-        name = 'Item_Powerup_18',
-        src = 'assets/images/items/Item_Powerup_18.png'
-    }, {
-    name = 'Item_Powerup_26',
-    src = 'assets/images/items/Item_Powerup_26.png'
-}, {
-    name = 'Item_Powerup_28',
-    src = 'assets/images/items/Item_Powerup_28.png'
-}, {
-    name = 'Item_Powerup_Drop_0',
-    src = 'assets/images/items/Item_Powerup_Drop_0.png'
-}, {
-    name = 'Item_Powerup_Shield_2',
-    src = 'assets/images/items/Item_Powerup_Shield_2.png'
-}, {
-    name = 'Item_Powerup_Weapon_5',
-    src = 'assets/images/items/Item_Powerup_Weapon_5.png'
-}, {
-    name = 'Item_Powerup_Weapon_8',
-    src = 'assets/images/items/Item_Powerup_Weapon_8.png'
-}, {
-    name = 'Item_Box_Gem_0',
-    src = 'assets/images/items/Item_Box_Gem_0.png'
-}, {
-    name = 'data_cache',
-    src = 'assets/images/items/data_cache.png'
-}, {
-    name = 'energy_shield',
-    src = 'assets/images/items/energy_shield.png'
-} }
-
--- Lista completa de sonidos (usaremos placeholders)
-SOUND_LIST = { {
-    name = "shoot",
-    src = "assets/sounds/effects/shot.wav"
-}, {
-    name = "powerup",
-    src = "assets/sounds/effects/coin.wav"
-}, {
-    name = "explosion",
-    src = "assets/sounds/effects/explosion.ogg"
-}, {
-    name = "menu",
-    src = "assets/sounds/effects/menu.wav"
-}, {
-    name = "bg",
-    src = "assets/sounds/music/bg.wav"
-}, {
-    name = "shield",
-    src = "assets/sounds/effects/shield.wav"
-}, {
-    name = "warpout",
-    src = "assets/sounds/effects/warpout.ogg"
-} }
-
 local canvas = nil -- Canvas for rendering
 local scale = 1
 local scaleX, scaleY = 1, 1
@@ -196,15 +17,20 @@ local shaderEnabled = true
 function love.load()
     math.randomseed(os.time())
 
+    require("data.Texts")  -- Cargar textos del juego
+    require("data.Assets") -- Cargar listas de imágenes y sonidos
+
     SetupViewport()
 
     CrtEffect = moonshine.chain(moonshine.effects.scanlines)
     -- CrtEffect.chain(moonshine.effects.ctr)
-    CrtEffect.chain(moonshine.effects.vignette)
+    -- CrtEffect.chain(moonshine.effects.vignette)
+    -- CrtEffect.chain(moonshine.effects.boxblur)
+    BlurEffect = moonshine.chain(moonshine.effects.boxblur)
 
     -- CrtEffect.scanlines.width = 1
-    CrtEffect.scanlines.opacity = 0.1
-    CrtEffect.vignette.radius = 1.2
+    CrtEffect.scanlines.opacity = 0.3
+    -- CrtEffect.vignette.radius = 1.2
 
     Json = require("lib.json")
 
@@ -216,8 +42,10 @@ function love.load()
     AudioManager = require("core.AudioManager")
     ImageManager = require("core.ImageManager")
     InputManager = require("core.InputManager")
+    ScreenManager = require("core.ScreenManager")
+
     Utils = require("core.Utils")
-    FSM = require("core.FSM")
+
     BaseEntity = require("core.BaseEntity")
     BaseScreen = require("core.BaseScreen")
     TaskSystem = require("core.TaskSystem")
@@ -243,6 +71,7 @@ function love.load()
     GameOverScreen = require("screens.GameOverScreen")
     GameEndScreen = require("screens.GameEndScreen")
     SettingScreen = require("screens.SettingScreen")
+    EnemyShowcaseScreen = require("screens.EnemyShowcaseScreen")
 
     LevelSelectScreen = require("screens.LevelSelectScreen")
     GamePlayScreen = require("screens.GamePlayScreen")
@@ -272,8 +101,8 @@ function love.load()
     -- Aplicar configuración de pantalla completa
     SetFullScreen(GameState.fullscreen)
 
-    ScreenManager = FSM:new("main")
-    GameScreenManager = FSM:new("game")
+    ScreenManager = ScreenManager:new("main")
+    GameScreenManager = ScreenManager:new("game")
 
     SetupScreens()
 
@@ -310,7 +139,9 @@ function love.draw()
     -- Limpiar el canvas
     love.graphics.clear()
 
-    CrtEffect(function()
+
+
+    -- CrtEffect(function()
         -- Limpiar con color de fondo
         love.graphics.clear(BG_COLOR)
         -- Dibujar la pantalla
@@ -321,7 +152,7 @@ function love.draw()
             baseline = 'bottom',
             color = 'white'
         })
-    end)
+    -- end)
 
     love.graphics.setCanvas()
 
@@ -400,6 +231,7 @@ function SetupScreens()
     ScreenManager:add("game_end", GameEndScreen)
     ScreenManager:add("settings", SettingScreen)
     ScreenManager:add("game", GameScreen)
+    ScreenManager:add("enemy_showcase", EnemyShowcaseScreen)
 
     -- Pantallas del juego
     GameScreenManager:add("game_level_select", LevelSelectScreen)

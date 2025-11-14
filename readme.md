@@ -110,8 +110,8 @@ const player = new BaseEntity({
 });
 
 // Finite State Machine
-const ScreenManager = new FSM();
-const GameScreenManager = new FSM('game');
+const ScreenManager = new ScreenManager();
+const GameScreenManager = new ScreenManager('game');
 
 // Object Pooling (Audio)
 AudioManager.init([
@@ -131,7 +131,7 @@ core.js/
 ├── KeyManager (Input con anti-repeat)
 ├── AudioManager (Sistema de sonido profesional)
 ├── ImageManager (Carga de assets)
-├── FSM (Máquina de estados finitos)
+├── ScreenManager (Máquina de estados finitos)
 ├── BaseEntity (Sistema de entidades)
 └── Utils (Funciones helper)
 

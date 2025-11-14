@@ -1,4 +1,4 @@
-local BaseScreen = require("core.BaseScreen")
+
 
 local LoadScreen = BaseScreen:new({
     name = "load",

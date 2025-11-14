@@ -30,10 +30,24 @@ local PlayerControllerTask = TaskSystem:create({
         
         if KeyManager:isDown("left") then
             self.entity.vx = -speed
+            self.entity.rotate = self.entity.rotate + -1
+            if self.entity.rotate < -10 then
+                self.entity.rotate = -10
+            end
         elseif KeyManager:isDown("right") then
             self.entity.vx = speed
+            self.entity.rotate = self.entity.rotate + 1
+            if self.entity.rotate > 10 then
+                self.entity.rotate = 10
+            end
         else
-            self.entity.vx = 0
+            --decrease rotation to 0
+            if self.entity.rotate > 0 then
+                self.entity.rotate = self.entity.rotate - 2
+            end
+            if self.entity.rotate < 0 then
+                self.entity.rotate = self.entity.rotate + 2
+            end
         end
     end
 })

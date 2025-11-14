@@ -1,4 +1,4 @@
-local BaseScreen = require("core.BaseScreen")
+
 
 local MenuScreen = BaseScreen:new({
     name = "menu",
@@ -17,7 +17,16 @@ local MenuScreen = BaseScreen:new({
             action = function()
                 ScreenManager:change("intro")
             end
-        }, {
+        }, 
+        {
+            name = function()
+                return "Enemy Showcase"
+            end,
+            action = function()
+                ScreenManager:push("enemy_showcase")
+            end
+        }
+        ,{
             name = function()
                 return "Settings"
             end,

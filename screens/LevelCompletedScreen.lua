@@ -1,4 +1,4 @@
-local BaseScreen = require("core.BaseScreen")
+
 
 local LevelCompletedScreen = BaseScreen:new({
     name = "game_level_completed",
@@ -6,6 +6,7 @@ local LevelCompletedScreen = BaseScreen:new({
     enter = function(self, data)
         self.score = data.score
         self.level = data.level
+        self.bg = Utils.createScrollingBackground(ImageManager:get("bg_intro"), 0)
     end,
     
     input = function(self, eventType, key)
@@ -18,9 +19,16 @@ local LevelCompletedScreen = BaseScreen:new({
             -- end
         end
     end,
+    update = function(self, dt)
+        InputManager:setContext("menu")
+        self.bg:update(dt)
+    end,
     
     render = function(self)
-        DrawManager:fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT, { color = BG_COLOR })
+        
+        self.bg:render()
+
+        DrawManager:fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT, {color = {0, 0, 0, 0.5}})
         
         DrawManager:fillText("Level " .. self.level.id .. " Completed!", GAME_WIDTH * 0.5, GAME_HEIGHT * 0.4, 
                            {size = 30, align = "center"})

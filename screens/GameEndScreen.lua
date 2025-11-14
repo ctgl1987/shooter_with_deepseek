@@ -1,4 +1,4 @@
-local BaseScreen = require("core.BaseScreen")
+
 
 local GameEndScreen = BaseScreen:new({
     name = "game_end",

@@ -105,6 +105,10 @@ function Utils.drawHpBar(params)
     local backColor = params.backColor or "gray"
     local color = params.color or "green"
 
+    if value < 0 then
+        value = 0
+    end
+
     local w = width
     local h = ENTITY_SIZE * 0.1
 

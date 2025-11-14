@@ -27,13 +27,13 @@ Levels.list = {
             "Intercept and identify. Weapons free if hostile.",
         },
         enemies = {
-            -- {item = "scout", weight = 1},
-            {item = "hunter", weight = 1},
+            {item = "scout", weight = 3},
+            {item = "kamikaze", weight = 1},
         },
         spawnRate = 90,
         maxEnemiesOnScreen = 3,
         objective = "elimination",
-        enemiesToEliminate = 3,
+        enemiesToEliminate = 1,
         image_name = "bg_asteroids",
         endMessages = {"Initial contact made. Prepare for escalating hostilities."},
     }),
@@ -44,7 +44,8 @@ Levels.list = {
             "They broke through Jupiter defense grid! Fall back to Mars orbit!",
         },
         enemies = {
-            {item = "scout", weight = 3},
+            {item = "scout", weight = 4},
+            {item = "kamikaze", weight = 1},
             {item = "heavy", weight = 1},
         },
         spawnRate = 80,
@@ -62,6 +63,7 @@ Levels.list = {
         },
         enemies = {
             {item = "scout", weight = 6},
+            {item = "kamikaze", weight = 2},
             {item = "hunter", weight = 2},
             {item = "heavy", weight = 1},
         },
@@ -81,6 +83,7 @@ Levels.list = {
         },
         enemies = {
             {item = "scout", weight = 4},
+            {item = "kamikaze", weight = 3},
             {item = "sniper", weight = 2},
             {item = "hunter", weight = 1}
         },
@@ -104,6 +107,7 @@ Levels.list = {
         },
         enemies = {
             {item = "scout", weight = 4},
+            {item = "kamikaze", weight = 3},
             {item = "heavy", weight = 2},
             {item = "sniper", weight = 1},
         },
@@ -122,6 +126,7 @@ Levels.list = {
         },
         enemies = {
             {item = "scout", weight = 3},
+            {item = "kamikaze", weight = 2},
             {item = "heavy", weight = 2},
             {item = "sniper", weight = 1},
             {item = "tank", weight = 1},

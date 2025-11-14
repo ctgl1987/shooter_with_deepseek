@@ -1,4 +1,3 @@
-local BaseScreen = require("core.BaseScreen")
 local PowerupTasks = require("tasks.PowerupTasks")
 
 local GamePlayScreen = BaseScreen:new({
@@ -41,7 +40,7 @@ local GamePlayScreen = BaseScreen:new({
         self:createBackground()
         self:setupCheats()
 
-        self.redFlash = Utils.createScreenFlasher({ 1, 0, 0, 0.1 }, 5)
+        self.redFlash = Utils.createScreenFlasher({ 1, 0, 0, 0.2 }, 5)
     end,
 
     createPlayer = function(self)
@@ -56,7 +55,8 @@ local GamePlayScreen = BaseScreen:new({
             maxHp = 10,
             friction = 0.8,
             speed = 300,
-            bombs = 0
+            bombs = 0,
+            rotate = 0
         })
 
         self.player.weapon = Utils.createPlayerWeapon()
@@ -65,7 +65,7 @@ local GamePlayScreen = BaseScreen:new({
         self.player:addTask(EntityTasks.EntityMoveTask.create())
 
         -- add player sprite
-        self.player.sprite = Sprite:new(ImageManager:get("ship_blue"), {
+        self.player.sprite = Sprite:new(ImageManager:get("new_ship_blue"), {
             frames = 0,
             frameRate = 5
         })
@@ -99,7 +99,11 @@ local GamePlayScreen = BaseScreen:new({
         end)
 
         self.player:on("post-render", function()
-            self.player.sprite:render(self.player:bounds());
+            local options = {
+                rotate = self.player.rotate or 0
+            }
+
+            self.player.sprite:render(self.player:bounds(), options);
 
             -- Barra de HP
             Utils.drawHpBar({
@@ -203,6 +207,11 @@ local GamePlayScreen = BaseScreen:new({
 
         enemy.image = ImageManager:get(template.image_name)
 
+        enemy.sprite = Sprite:new(enemy.image, {
+            frames = template.frames or 0,
+            frameRate = template.frameRate or 5
+        })
+
         local r = 0
 
         enemy:on("post-render", function()
@@ -219,7 +228,8 @@ local GamePlayScreen = BaseScreen:new({
             local options = {
                 rotate = 180
             }
-            DrawManager:drawImage(enemy.image, dst, nil, options)
+
+            enemy.sprite:render(dst, options)
 
             -- Dibujar nombre
             r = r + 2
@@ -331,18 +341,14 @@ local GamePlayScreen = BaseScreen:new({
         item.image = ImageManager:get(template.image_name)
 
         item:on("post-render", function()
-            -- local color = template.color
+            local color = template.color
 
-            -- love.graphics.setColor(color[1], color[2], color[3], 0.3)
-            -- love.graphics.circle("fill", item:center().x, item:center().y, item.width * 0.75)
+            love.graphics.setColor(color[1], color[2], color[3], 0.2)
+            love.graphics.circle("fill", item:center().x, item:center().y, item.width * 0.75)
 
-            -- -- Núcleo brillante
-            -- love.graphics.setColor(color[1], color[2], color[3], 1)
-            -- love.graphics.circle("fill", item:center().x, item:center().y, item.width * 0.6)
-
-            -- -- Efecto de resplandor
-            -- love.graphics.setColor(1, 1, 1, 0.8)
-            -- love.graphics.arc("line", item:center().x, item:center().y, item.width * 0.8, 0, math.pi * 0.3)
+            -- Núcleo brillante
+            love.graphics.setColor(color[1], color[2], color[3], 0.4)
+            love.graphics.circle("fill", item:center().x, item:center().y, item.width * 0.6)
 
             local dst = {
                 x = item.x,
@@ -489,8 +495,10 @@ local GamePlayScreen = BaseScreen:new({
         if self.warped then
             return
         end
+        self.bg.vy = 300
         self.warped = true
         self.player.vy = -300
+        self.player.rotate = 0
         AudioManager:play("warpout")
     end,
 
@@ -512,6 +520,7 @@ local GamePlayScreen = BaseScreen:new({
         -- Mover jugador al centro
         local targetX = (GAME_WIDTH - self.player.width) / 2
         self.player.x = self.player.x + (targetX - self.player.x) * 0.1
+        self.player.rotate = self.player.rotate + (0 - self.player.rotate) * 0.1
 
         if self.endTimer.value < self.endTimer.limit then
             self.endTimer.value = self.endTimer.value + 1
@@ -586,7 +595,7 @@ local GamePlayScreen = BaseScreen:new({
             local bullet = self.playerBullets[i]
             bullet:update(dt)
 
-            if bullet.y + bullet.height < 0 then
+            if bullet.y < 0 then
                 bullet.dead = true
             end
 
@@ -686,6 +695,7 @@ local GamePlayScreen = BaseScreen:new({
                     -- Activar bomba - destruir todos los enemigos
                     for _, enemy in ipairs(self.enemies) do
                         enemy.dead = true
+                        self.score = self.score + enemy.score
                         self:spawnParticles(enemy:center())
                         AudioManager:play("explosion")
                     end
@@ -761,6 +771,12 @@ local GamePlayScreen = BaseScreen:new({
         -- Tiempo
         local durationSeconds = math.floor(self.duration / 60)
         DrawManager:fillText("Time: " .. durationSeconds .. "s", GAME_WIDTH - 10, 10, {
+            align = "right",
+            color = "yellow",
+            size = 24
+        })
+        --player vx
+        DrawManager:fillText("Speed: " .. math.floor(self.player.vx), GAME_WIDTH - 10, 35, {
             align = "right",
             color = "yellow",
             size = 24
@@ -841,7 +857,7 @@ local GamePlayScreen = BaseScreen:new({
             table.insert(messages, msg)
         end
         table.insert(messages, "")
-        table.insert(messages, "Objective: " .. ObjectivesText[self.level.objective])
+        table.insert(messages, "Objective: " .. GAME_OBJECTIVES[self.level.objective])
 
         for _, msg in ipairs(messages) do
             DrawManager:fillText(msg, GAME_WIDTH * 0.5, introOffsetY, {
@@ -874,7 +890,14 @@ local GamePlayScreen = BaseScreen:new({
     end,
 
     render = function(self)
-        self.bg:render()
+        if self.warped then
+            BlurEffect:draw(function()
+                self.bg:render()
+            end)
+        else
+            self.bg:render()
+        end
+
         -- CheatManager:render()
 
         -- Renderizar entidades

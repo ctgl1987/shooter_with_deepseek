@@ -1,20 +1,20 @@
-local FSM = {}
-FSM.__index = FSM
+local ScreenManager = {}
+ScreenManager.__index = ScreenManager
 
-function FSM:new(name)
-    local fsm = setmetatable({}, FSM)
+function ScreenManager:new(name)
+    local fsm = setmetatable({}, ScreenManager)
     fsm.name = name or "default"
     fsm.states = {}
     fsm.current = {}
     return fsm
 end
 
-function FSM:add(name, state)
+function ScreenManager:add(name, state)
     self.states[name] = state
     state.name = name
 end
 
-function FSM:change(name, data)
+function ScreenManager:change(name, data)
     local state = self.states[name]
     if not state then
         print("Error: No state found: " .. name)
@@ -35,7 +35,7 @@ function FSM:change(name, data)
     end
 end
 
-function FSM:push(name, data)
+function ScreenManager:push(name, data)
     local state = self.states[name]
     if not state then
         print("Error: No state found: " .. name)
@@ -49,7 +49,7 @@ function FSM:push(name, data)
     end
 end
 
-function FSM:pop()
+function ScreenManager:pop()
     if #self.current <= 1 then return end
     
     local state = table.remove(self.current, 1)
@@ -58,14 +58,14 @@ function FSM:pop()
     end
 end
 
-function FSM:update(dt)
+function ScreenManager:update(dt)
     if #self.current == 0 then return end
     if self.current[1].update then
         self.current[1]:update(dt)
     end
 end
 
-function FSM:render()
+function ScreenManager:render()
     for i = #self.current, 1, -1 do
         if self.current[i].render then
             self.current[i]:render()
@@ -73,11 +73,11 @@ function FSM:render()
     end
 end
 
-function FSM:input(eventType, key, realKey)
+function ScreenManager:input(eventType, key, realKey)
     if #self.current == 0 then return end
     if self.current[1].input then
         self.current[1]:input(eventType, key, realKey)
     end
 end
 
-return FSM
+return ScreenManager

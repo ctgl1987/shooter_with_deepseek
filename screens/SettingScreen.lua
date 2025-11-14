@@ -1,4 +1,4 @@
-local BaseScreen = require("core.BaseScreen")
+
 
 local SettingScreen = BaseScreen:new({
     name = "settings",

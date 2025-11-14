@@ -242,7 +242,7 @@ const Utils = {
     },
 };
 
-const FSM = function (name = 'default') {
+const ScreenManager = function (name = 'default') {
     return {
         name: name,
         _s: {},
@@ -296,7 +296,7 @@ const FSM = function (name = 'default') {
             });
 
             //debug fsm name
-            // DrawManager.fillText(`FSM: ${this.name}`, 10, GAME_HEIGHT - 20, { color: 'yellow', size: 14, bold: true, baseline: 'top' } );
+            // DrawManager.fillText(`ScreenManager: ${this.name}`, 10, GAME_HEIGHT - 20, { color: 'yellow', size: 14, bold: true, baseline: 'top' } );
         },
     };
 }

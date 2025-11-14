@@ -24,7 +24,7 @@ function Sprite:update()
     end
 end
 
-function Sprite:render(bounds)
+function Sprite:render(bounds, options)
     if self.frames > 1 then
         local quad = love.graphics.newQuad(
             self.frame * self.frameWidth,
@@ -34,9 +34,9 @@ function Sprite:render(bounds)
             self.image:getWidth(),
             self.image:getHeight()
         )
-        DrawManager:drawImage(self.image, bounds, quad)
+        DrawManager:drawImage(self.image, bounds, quad, options)
     else
-        DrawManager:drawImage(self.image, bounds)
+        DrawManager:drawImage(self.image, bounds, nil, options)
     end
 end
 

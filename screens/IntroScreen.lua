@@ -1,4 +1,4 @@
-local BaseScreen = require("core.BaseScreen")
+
 
 local IntroScreen = BaseScreen:new({
     name = "intro",
