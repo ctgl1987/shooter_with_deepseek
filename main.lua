@@ -26,6 +26,8 @@ function love.load()
     -- CrtEffect.chain(moonshine.effects.ctr)
     -- CrtEffect.chain(moonshine.effects.vignette)
     -- CrtEffect.chain(moonshine.effects.boxblur)
+
+    
     BlurEffect = moonshine.chain(moonshine.effects.boxblur)
 
     -- CrtEffect.scanlines.width = 1
