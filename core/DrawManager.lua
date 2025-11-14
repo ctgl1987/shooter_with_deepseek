@@ -21,6 +21,8 @@ end
 function DrawManager:setColor(color)
     if type(color) == "string" then
         love.graphics.setColor(self.colors[color] or self.colors.white)
+    elseif type(color) == "table" then
+        love.graphics.setColor(unpack(color))
     else
         love.graphics.setColor(color)
     end
@@ -42,6 +44,17 @@ function DrawManager:fillRect(x, y, w, h, options)
 
     self:setColor(color)
     love.graphics.rectangle("fill", x, y, w, h)
+end
+
+function DrawManager:strokeRect(x, y, w, h, options)
+    options = options or {}
+    local color = options.color or "white"
+    local lineWidth = options.lineWidth or 1
+    local borderRadius = options.borderRadius or 0
+    
+    love.graphics.setLineWidth(lineWidth)
+    self:setColor(color)
+    love.graphics.rectangle("line", x, y, w, h, borderRadius)
 end
 
 function DrawManager:fillText(text, x, y, options)

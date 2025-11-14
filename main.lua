@@ -35,6 +35,7 @@ function love.load()
     -- CrtEffect.vignette.radius = 1.2
 
     Json = require("lib.json")
+    Lume = require("lib.lume")
 
     Serpent = require("serpent")
 
@@ -167,6 +168,12 @@ function love.keypressed(key)
     --     ToggleFullscreen()
     --     return
     -- end
+
+    -- ctrl + r to reset game
+    if key == "r" and (love.keyboard.isDown("lctrl") or love.keyboard.isDown("rctrl")) then
+        love.event.quit('restart')
+        return
+    end
 
     if key == "f10" then
         DebugGameState()
