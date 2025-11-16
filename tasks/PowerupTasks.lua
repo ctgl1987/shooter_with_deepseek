@@ -5,21 +5,28 @@ local ShieldPowerupTask = TaskSystem:create({
     name = "Shield",
     duration = 300,
     powerup = true,
-    
+
     onStart = function(self, entity)
         self.entity = entity
         AudioManager:play("shield")
-        
+
         self.renderListener = self.entity:on("pre-render", function()
             local pos = self.entity:center()
-            DrawManager:fillCircle(pos.x, pos.y, self.entity.width * 1.5, {color = {0, 0.57, 1, 0.07}})
+            -- DrawManager:fillCircle(pos.x, pos.y, self.entity.width * 1.5, { color = { 0, 0.57, 1, 0.07 } })
+            for i = 1, 3 do
+                local radius = 100 - (i * 20)
+                --dark blue glow
+                love.graphics.setColor(0, 0.37, 0.8, i / 10)
+                love.graphics.circle("fill", pos.x, pos.y, radius)
+            end
+            love.graphics.setColor(1, 1, 1, 1)
         end)
-        
+
         self.damageListener = self.entity:on("damage-received", function(data)
             data.damage = 0
         end)
     end,
-    
+
     onComplete = function(self)
         self.renderListener:remove()
         self.damageListener:remove()
@@ -31,12 +38,12 @@ local TripleShotPowerupTask = TaskSystem:create({
     name = "Triple Shot",
     duration = 450,
     powerup = true,
-    
+
     onStart = function(self, entity)
         self.entity = entity
         self.bulletListener = self.entity:on("bullet-created", function(data)
             local baseBullet = data.bullets[1]
-            
+
             -- Bala izquierda
             local leftBullet = BaseEntity:new({
                 type = "bullet",
@@ -53,7 +60,7 @@ local TripleShotPowerupTask = TaskSystem:create({
             })
             leftBullet:addTask(EntityTasks.EntityMoveTask.create())
             table.insert(data.bullets, leftBullet)
-            
+
             -- Bala derecha
             local rightBullet = BaseEntity:new({
                 type = "bullet",
@@ -72,7 +79,7 @@ local TripleShotPowerupTask = TaskSystem:create({
             table.insert(data.bullets, rightBullet)
         end)
     end,
-    
+
     onComplete = function(self)
         self.bulletListener:remove()
     end
@@ -83,13 +90,32 @@ local FastSpeedPowerupTask = TaskSystem:create({
     name = "Fast Speed",
     duration = 600,
     powerup = true,
-    
+
     onStart = function(self, entity)
         self.entity = entity
         self.originalSpeed = self.entity.speed
         self.entity.speed = self.entity.speed * 1.5
     end,
-    
+
+    onUpdate = function(self, dt)
+        if math.random() < 0.3 then -- 30% de probabilidad por frame
+            self.entity:emit("spawn-particles", {
+                position = {
+                    x = self.entity:center().x,
+                    y = self.entity:bottom() - 10 -- ajustar un poco hacia arriba
+                },
+                options = {
+                    color = { 0, 0.5, 1, 0.8 }, -- blue
+                    size = 2,
+                    speed = 30,
+                    spread = math.pi,
+                    amount = 5,
+                    ttl = 30
+                }
+            })
+        end
+    end,
+
     onComplete = function(self)
         self.entity.speed = self.originalSpeed
     end
@@ -100,13 +126,13 @@ local RapidFirePowerupTask = TaskSystem:create({
     name = "Rapid Fire",
     duration = 600,
     powerup = true,
-    
+
     onStart = function(self, entity)
         self.entity = entity
         self.originalFireRate = self.entity.weapon.fireRate
         self.entity.weapon.fireRate = self.entity.weapon.fireRate / 2
     end,
-    
+
     onComplete = function(self)
         self.entity.weapon.fireRate = self.originalFireRate
     end
@@ -117,18 +143,37 @@ local LifeDrainPowerupTask = TaskSystem:create({
     name = "Life Drain",
     duration = 600,
     powerup = true,
-    
+
     onStart = function(self, entity)
         self.entity = entity
         self.bulletListener = self.entity:on("bullet-created", function(data)
             for _, bullet in ipairs(data.bullets) do
                 bullet:on("bullet-hit", function(hitData)
-                    self.entity:emit("hp-restored", {amount = hitData.damage})
+                    self.entity:emit("hp-restored", { amount = hitData.damage })
                 end)
             end
         end)
     end,
-    
+
+    onUpdate = function(self, dt)
+        if math.random() < 0.3 then -- 30% de probabilidad por frame
+            self.entity:emit("spawn-particles", {
+                position = {
+                    x = self.entity:center().x,
+                    y = self.entity.y - 5 -- ajustar un poco hacia arriba
+                },
+                options = {
+                    color = { 0.5, 0, 0.5, 0.8 }, -- purple
+                    size = 2,
+                    speed = 30,
+                    spread = math.pi,
+                    amount = 5,
+                    ttl = 30
+                }
+            })
+        end
+    end,
+
     onComplete = function(self)
         self.bulletListener:remove()
     end
@@ -139,7 +184,7 @@ local FreezePowerupTask = TaskSystem:create({
     name = "Freeze",
     duration = 600,
     powerup = true,
-    
+
     onStart = function(self, entity)
         self.entity = entity
         self.bulletListener = self.entity:on("bullet-created", function(data)
@@ -153,7 +198,7 @@ local FreezePowerupTask = TaskSystem:create({
             end
         end)
     end,
-    
+
     onComplete = function(self)
         self.bulletListener:remove()
     end
@@ -164,20 +209,20 @@ local FreezedTask = TaskSystem:create({
     name = "Freezed",
     duration = 180,
     powerup = true,
-    
+
     onStart = function(self, entity)
         self.entity = entity
         self.originalVx = self.entity.vx
         self.originalVy = self.entity.vy
         self.entity.vx = 0
         self.entity.vy = 0
-        
+
         self.renderListener = self.entity:on("pre-render", function()
             local pos = self.entity:center()
-            DrawManager:fillCircle(pos.x, pos.y, self.entity.width, {color = {0.43, 0.75, 0.99, 0.07}})
+            DrawManager:fillCircle(pos.x, pos.y, self.entity.width, { color = { 0.43, 0.75, 0.99, 0.07 } })
         end)
     end,
-    
+
     onComplete = function(self)
         self.entity.vx = self.originalVx
         self.entity.vy = self.originalVy

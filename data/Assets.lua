@@ -131,40 +131,45 @@ local bgImages = { {
     name = 'bg_stars_orange',
     src = 'assets/images/bg/bg_stars_orange.png'
 }, {
+    name = 'bg_lunar_base',
+    src = 'assets/images/bg/bg_lunar_base.png'
+}, {
     name = 'bg_stars_green',
     src = 'assets/images/bg/bg_stars_green.png'
 } }
 
 local itemImages = { {
-    name = 'Item_Powerup_18',
-    src = 'assets/images/items/Item_Powerup_18.png'
+    name = 'item_bomb',
+    src = 'assets/images/items/item_bomb.png'
 }, {
-    name = 'Item_Powerup_26',
-    src = 'assets/images/items/Item_Powerup_26.png'
+    name = 'item_freeze',
+    src = 'assets/images/items/item_freeze.png'
 }, {
-    name = 'Item_Powerup_28',
-    src = 'assets/images/items/Item_Powerup_28.png'
+    name = 'item_triple_shot',
+    src = 'assets/images/items/item_triple_shot.png'
 }, {
-    name = 'Item_Powerup_Drop_0',
-    src = 'assets/images/items/Item_Powerup_Drop_0.png'
+    name = 'item_drain_life',
+    src = 'assets/images/items/item_drain_life.png'
 }, {
-    name = 'Item_Powerup_Shield_2',
-    src = 'assets/images/items/Item_Powerup_Shield_2.png'
+    name = 'item_speed_boost',
+    src = 'assets/images/items/item_speed_boost.png'
 }, {
-    name = 'Item_Powerup_Weapon_5',
-    src = 'assets/images/items/Item_Powerup_Weapon_5.png'
+    name = 'item_repair_kit',
+    src = 'assets/images/items/item_repair_kit.png'
 }, {
-    name = 'Item_Powerup_Weapon_8',
-    src = 'assets/images/items/Item_Powerup_Weapon_8.png'
+    name = 'item_rapid_fire',
+    src = 'assets/images/items/item_rapid_fire.png'
 }, {
-    name = 'Item_Box_Gem_0',
-    src = 'assets/images/items/Item_Box_Gem_0.png'
+    name = 'item_data_cache',
+    src = 'assets/images/items/item_data_cache.png'
 }, {
-    name = 'data_cache',
-    src = 'assets/images/items/data_cache.png'
-}, {
-    name = 'energy_shield',
-    src = 'assets/images/items/energy_shield.png'
+    name = 'item_energy_shield',
+    src = 'assets/images/items/item_energy_shield.png'
+} }
+
+local characters = { {
+    name = 'character_player',
+    src = 'assets/images/characters/character_player.png'
 } }
 
 IMAGE_LIST = {}
@@ -187,6 +192,11 @@ end
 -- Add all item images
 for i, itemImg in ipairs(itemImages) do
     IMAGE_LIST[#IMAGE_LIST + 1] = itemImg
+end
+
+-- Add all characters
+for i, character in ipairs(characters) do
+    IMAGE_LIST[#IMAGE_LIST + 1] = character
 end
 
 

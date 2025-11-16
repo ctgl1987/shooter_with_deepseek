@@ -41,9 +41,10 @@ end
 function DrawManager:fillRect(x, y, w, h, options)
     options = options or {}
     local color = options.color or "white"
+    local borderRadius = options.borderRadius or 0
 
     self:setColor(color)
-    love.graphics.rectangle("fill", x, y, w, h)
+    love.graphics.rectangle("fill", x, y, w, h, borderRadius)
 end
 
 function DrawManager:strokeRect(x, y, w, h, options)
@@ -51,7 +52,7 @@ function DrawManager:strokeRect(x, y, w, h, options)
     local color = options.color or "white"
     local lineWidth = options.lineWidth or 1
     local borderRadius = options.borderRadius or 0
-    
+
     love.graphics.setLineWidth(lineWidth)
     self:setColor(color)
     love.graphics.rectangle("line", x, y, w, h, borderRadius)
@@ -144,6 +145,8 @@ function DrawManager:drawImage(img, dst, src, options)
     options = options or {}
     local rotate = options.rotate or 0
     local pulse = options.pulse or nil
+    local alpha = options.alpha or 1
+    local color = options.color or { 1, 1, 1 } -- Color por defecto: blanco
 
     -- Calcular dimensiones y escala base
     local imgWidth, imgHeight = img:getDimensions()
@@ -165,15 +168,18 @@ function DrawManager:drawImage(img, dst, src, options)
         pulseScaleY = scaleY * scaleFactor
     end
 
-    love.graphics.setColor(1, 1, 1)
+    love.graphics.setColor(color[1], color[2], color[3], alpha) -- Establecer color blanco con alpha
 
-    -- Dibujar la imagen con todas las transformaciones
+    -- Dibujar la imagen con todas las transformaciones y alpha
     if src and src.x then
         local quad = love.graphics.newQuad(src.x, src.y, src.width, src.height, imgWidth, imgHeight)
         love.graphics.draw(img, quad, drawX, drawY, math.rad(rotate), pulseScaleX, pulseScaleY, ox, oy)
     else
         love.graphics.draw(img, drawX, drawY, math.rad(rotate), pulseScaleX, pulseScaleY, ox, oy)
     end
+
+    -- Restaurar color
+    love.graphics.setColor(1, 1, 1, 1)
 end
 
 return DrawManager

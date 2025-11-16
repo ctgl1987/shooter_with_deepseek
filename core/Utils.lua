@@ -196,6 +196,26 @@ function Utils.createScreenFlasher(color, duration)
     }
 end
 
+function Utils.createTimer(ticks)
+    return {
+        duration = 0,
+        start = function(self)
+            self.duration = ticks
+        end,
+        update = function(self)
+            if self.duration > 0 then
+                self.duration = self.duration - 1
+            end
+        end,
+        ready = function(self)
+            return self.duration <= 0
+        end,
+        reset = function(self)
+            self.duration = ticks
+        end
+    }
+end
+
 -- Crear arma de jugador
 function Utils.createPlayerWeapon()
     return {

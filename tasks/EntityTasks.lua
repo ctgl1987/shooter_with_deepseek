@@ -3,15 +3,15 @@ local TaskSystem = require("core.TaskSystem")
 local EntityMoveTask = TaskSystem:create({
     name = "EntityMoveTask",
     duration = math.huge,
-    
+
     onStart = function(self, entity)
         self.entity = entity
     end,
-    
+
     onUpdate = function(self, dt)
         self.entity.x = self.entity.x + self.entity.vx * dt
         self.entity.y = self.entity.y + self.entity.vy * dt
-        
+
         self.entity.vx = self.entity.vx * (self.entity.friction or 1)
         self.entity.vy = self.entity.vy * (self.entity.friction or 1)
     end
@@ -20,14 +20,14 @@ local EntityMoveTask = TaskSystem:create({
 local PlayerControllerTask = TaskSystem:create({
     name = "PlayerControllerTask",
     duration = math.huge,
-    
+
     onStart = function(self, entity)
         self.entity = entity
     end,
-    
+
     onUpdate = function(self, dt)
         local speed = self.entity.speed
-        
+
         if KeyManager:isDown("left") then
             self.entity.vx = -speed
             self.entity.rotate = self.entity.rotate + -1
@@ -82,7 +82,7 @@ local EnemyFireTask = TaskSystem:create({
                 owner = self.entity,
                 width = ENTITY_SIZE * 0.05,
                 height = ENTITY_SIZE * 0.2,
-                color = {1, 0, 0},
+                color = { 1, 0, 0 },
                 damage = 1,
                 vy = 360
             })
@@ -96,10 +96,10 @@ local EnemyFireTask = TaskSystem:create({
             AudioManager:play("shoot")
 
             self.entity:emit("bullet-created", {
-                bullets = {bullet}
+                bullets = { bullet }
             })
             self.entity:emit("enemy-fire", {
-                bullets = {bullet}
+                bullets = { bullet }
             })
         end
     end
@@ -108,12 +108,12 @@ local EnemyFireTask = TaskSystem:create({
 local SideMovementTask = TaskSystem:create({
     name = "SideMovementTask",
     duration = math.huge,
-    
+
     onStart = function(self, entity)
         self.entity = entity
         self.startTime = love.timer.getTime()
     end,
-    
+
     onUpdate = function(self, dt)
         local time = love.timer.getTime() - self.startTime
         self.entity.vx = math.sin(time * 2) * 120
@@ -123,24 +123,24 @@ local SideMovementTask = TaskSystem:create({
 local BossTask = TaskSystem:create({
     name = "BossTask",
     duration = math.huge,
-    
+
     onStart = function(self, entity)
         self.entity = entity
         self.phase = 0
         self.timer = 0
         self.vx = 2
-        
-        self.entity:centerTo({x = GAME_WIDTH / 2})
+
+        self.entity:centerTo({ x = GAME_WIDTH / 2 })
         self.entity.y = -self.entity.height
         self.entity:removeTask("EnemyFireTask")
     end,
-    
+
     onUpdate = function(self, dt)
         -- Movimiento lateral
         if self.entity.x <= 0 or self.entity:right() >= GAME_WIDTH then
             self.entity.vx = -self.entity.vx
         end
-        
+
         -- Fase 0: Entrada en pantalla
         if self.phase == 0 then
             if self.entity.y >= 80 then
@@ -148,35 +148,35 @@ local BossTask = TaskSystem:create({
                 self.entity.vy = 0
                 self.entity.vx = self.vx
                 self.phase = 1
-                
+
                 local fireTask = EntityTasks.EnemyFireTask.create()
                 fireTask.chanceLimit = 0.75
                 self.entity:addTask(fireTask)
             end
         end
-        
+
         -- Fase 1: Rage mode al 25% de HP
         if self.phase == 1 and self.entity.hp <= self.entity.maxHp * 0.25 then
             self.phase = 2
             self.entity.vx = self.entity.vx * 2
-            
+
             -- Encontrar y modificar la tarea de disparo
             for _, task in ipairs(self.entity.tasks) do
                 if task.name == "EnemyFireTask" then
                     task.chanceLimit = 1.1
                     task.fireTimer.limit = 30
-                    
+
                     -- Configurar disparo triple
                     task.entity.onBulletCreated = function(data)
                         local baseBullet = data.bullets[1]
-                        
+
                         -- Bala izquierda
                         local leftBullet = BaseEntity:new({
                             type = "bullet",
                             owner = self.entity,
                             width = ENTITY_SIZE * 0.05,
                             height = ENTITY_SIZE * 0.2,
-                            color = {1, 0, 0},
+                            color = { 1, 0, 0 },
                             damage = 1,
                             vy = baseBullet.vy
                         })
@@ -186,14 +186,14 @@ local BossTask = TaskSystem:create({
                         })
                         leftBullet:addTask(EntityTasks.EntityMoveTask.create())
                         table.insert(data.bullets, leftBullet)
-                        
+
                         -- Bala derecha
                         local rightBullet = BaseEntity:new({
                             type = "bullet",
                             owner = self.entity,
                             width = ENTITY_SIZE * 0.05,
                             height = ENTITY_SIZE * 0.2,
-                            color = {1, 0, 0},
+                            color = { 1, 0, 0 },
                             damage = 1,
                             vy = baseBullet.vy
                         })
@@ -214,11 +214,11 @@ local BossTask = TaskSystem:create({
 local KeepOnScreenTask = TaskSystem:create({
     name = "KeepOnScreenTask",
     duration = math.huge,
-    
+
     onStart = function(self, entity)
         self.entity = entity
     end,
-    
+
     onUpdate = function(self, dt)
         if self.entity.x < 0 then
             self.entity.x = 0
@@ -230,11 +230,44 @@ local KeepOnScreenTask = TaskSystem:create({
     end
 })
 
+local MotorBurstTask = TaskSystem:create({
+    name = "MotorBurstTask",
+    duration = math.huge,
+
+    onStart = function(self, entity)
+        self.entity = entity
+    end,
+
+    onUpdate = function(self, dt)
+        if math.random() < 0.5 then -- 50% de probabilidad por frame
+            self.entity:emit("spawn-particles", {
+                position = {
+                    x = self.entity:center().x,
+                    y = self.entity:bottom() - 10 -- ajustar un poco hacia arriba
+                },
+                options = {
+                    color = { 1, 1, 1, 0.8 }, -- white, normal motor burst
+                    size = 2,
+                    speed = 30,
+                    spread = math.pi,
+                    amount = 5,
+                    ttl = 30
+                }
+            })
+        end
+    end,
+
+    onComplete = function(self)
+
+    end
+})
+
 return {
     EntityMoveTask = EntityMoveTask,
     PlayerControllerTask = PlayerControllerTask,
     EnemyFireTask = EnemyFireTask,
     SideMovementTask = SideMovementTask,
     BossTask = BossTask,
-    KeepOnScreenTask = KeepOnScreenTask
+    KeepOnScreenTask = KeepOnScreenTask,
+    MotorBurstTask = MotorBurstTask,
 }

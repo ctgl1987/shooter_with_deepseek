@@ -39,7 +39,7 @@ local EnemyTypes = {
         hp = 2,
         build = function(e)
             e:addTask(EntityTasks.SideMovementTask.create())
-            e.width = ENTITY_SIZE * 2
+            e.width = ENTITY_SIZE * 1.5
         end
     },
     tank = {

@@ -27,7 +27,7 @@ function love.load()
     -- CrtEffect.chain(moonshine.effects.vignette)
     -- CrtEffect.chain(moonshine.effects.boxblur)
 
-    
+
     BlurEffect = moonshine.chain(moonshine.effects.boxblur)
 
     -- CrtEffect.scanlines.width = 1
@@ -37,7 +37,7 @@ function love.load()
     Json = require("lib.json")
     Lume = require("lib.lume")
 
-    Serpent = require("serpent")
+    Serpent = require("core.serpent")
 
     -- Cargar módulos core y asignarlos a variables globales
     DrawManager = require("core.DrawManager")
@@ -142,9 +142,7 @@ function love.draw()
     -- Limpiar el canvas
     love.graphics.clear()
 
-
-
-    -- CrtEffect(function()
+    CrtEffect(function()
         -- Limpiar con color de fondo
         love.graphics.clear(BG_COLOR)
         -- Dibujar la pantalla
@@ -155,7 +153,7 @@ function love.draw()
             baseline = 'bottom',
             color = 'white'
         })
-    -- end)
+    end)
 
     love.graphics.setCanvas()
 
@@ -164,11 +162,6 @@ function love.draw()
 end
 
 function love.keypressed(key)
-    -- if key == "f11" then
-    --     ToggleFullscreen()
-    --     return
-    -- end
-
     -- ctrl + r to reset game
     if key == "r" and (love.keyboard.isDown("lctrl") or love.keyboard.isDown("rctrl")) then
         love.event.quit('restart')
