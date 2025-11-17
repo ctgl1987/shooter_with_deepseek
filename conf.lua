@@ -7,7 +7,8 @@ function love.conf(t)
     t.window.resizable = true
     t.modules.joystick = true
     t.window.icon = "assets/icon.png"
+    t.console = true
+    t.accelerometerjoystick = false
     -- t.window.fullscreen = true
     -- t.window.fullscreentype = "desktop"  -- Pantalla completa "borderless"
-    t.console = true
 end
