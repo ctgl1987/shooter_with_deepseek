@@ -824,17 +824,25 @@ local GamePlayScreen = BaseScreen:new({
             shadow = false,
         })
 
-        offsetY = offsetY + 25
+        offsetY = offsetY + 35
+
+        DrawManager:strokeRect(offsetX, offsetY, barWidth, barHeight, {
+            color = "white",
+            lineWidth = 1,
+            borderRadius = 2
+        })
 
         -- Score
-        DrawManager:fillText("Score: " .. self.score, 10, offsetY, {
+        DrawManager:fillText("SCORE:    " .. string.format("%07d", self.score), 16, offsetY + 2, {
             color = "yellow",
-            size = 16
+            size = 16,
         })
-        offsetY = offsetY + 25
+
+
+        offsetY = offsetY + 35
 
         -- Bombs
-        DrawManager:fillText("Bombs: " .. self.player.bombs, 10, offsetY, {
+        DrawManager:fillText("BOMBS: " .. self.player.bombs, 12, offsetY, {
             color = "yellow",
             size = 16
         })
