@@ -1,5 +1,5 @@
 local ShakeDuration = 0
-local ShakeMagnitude = 2
+local ShakeMagnitude = 5
 
 local GamePlayScreen = BaseScreen:new({
     name = "game_play",
@@ -776,7 +776,7 @@ local GamePlayScreen = BaseScreen:new({
         local offsetX = 10
         local offsetY = 10
         local barWidth = 200
-        local barHeight = 20
+        local barHeight = 24
         local padding = 3
 
         local innerBarWidth = barWidth - (padding * 2)
@@ -799,6 +799,8 @@ local GamePlayScreen = BaseScreen:new({
             hpColor = { Lume.color("#FF0000", 0.9) }
         end
 
+        hpColor = { Lume.color("#FF0000", 0.9) }
+
         DrawManager:strokeRect(offsetX, offsetY, barWidth, barHeight, {
             color = "white",
             lineWidth = 1,
@@ -813,19 +815,28 @@ local GamePlayScreen = BaseScreen:new({
             color = { 1, 1, 1, 0.4 }
         })
 
+        --draw hp text centered on the hp bar
+        DrawManager:fillText(self.player.hp .. "/" .. self.player.maxHp, offsetX + barWidth / 2, offsetY + barHeight / 2, {
+            color = "white",
+            align = "center",
+            baseline = "middle",
+            size = 16,
+            shadow = false,
+        })
+
         offsetY = offsetY + 25
 
         -- Score
         DrawManager:fillText("Score: " .. self.score, 10, offsetY, {
             color = "yellow",
-            size = 24
+            size = 16
         })
         offsetY = offsetY + 25
 
         -- Bombs
         DrawManager:fillText("Bombs: " .. self.player.bombs, 10, offsetY, {
             color = "yellow",
-            size = 24
+            size = 16
         })
         offsetY = offsetY + 30
 
@@ -834,7 +845,7 @@ local GamePlayScreen = BaseScreen:new({
         DrawManager:fillText("Time: " .. durationSeconds .. "s", GAME_WIDTH - 10, 10, {
             align = "right",
             color = "yellow",
-            size = 24
+            size = 16
         })
 
         -- Objetivo del nivel
@@ -990,7 +1001,7 @@ local GamePlayScreen = BaseScreen:new({
         if ShakeDuration > 0 then
             love.graphics.push()
             local shakeX = Utils.randomInt(-ShakeMagnitude, ShakeMagnitude)
-            local shakeY = Utils.randomInt(-ShakeMagnitude, ShakeMagnitude)
+            local shakeY = 0 --Utils.randomInt(-ShakeMagnitude, ShakeMagnitude)
             love.graphics.translate(shakeX, shakeY)
         end
         if self.warped then
@@ -1038,11 +1049,10 @@ local GamePlayScreen = BaseScreen:new({
         end
 
 
+
         if ShakeDuration > 0 then
             love.graphics.pop()
         end
-
-
 
         self.redFlash:render()
         self:renderUI()

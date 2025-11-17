@@ -20,6 +20,18 @@ end
 
 function DrawManager:setColor(color)
     if type(color) == "string" then
+        if color:sub(1, 1) == "#" then
+            -- Color hexadecimal
+            local r = tonumber(color:sub(2, 3), 16) / 255
+            local g = tonumber(color:sub(4, 5), 16) / 255
+            local b = tonumber(color:sub(6, 7), 16) / 255
+            local a = 1
+            if #color == 9 then
+                a = tonumber(color:sub(8, 9), 16) / 255
+            end
+            love.graphics.setColor(r, g, b, a)
+            return
+        end
         love.graphics.setColor(self.colors[color] or self.colors.white)
     elseif type(color) == "table" then
         love.graphics.setColor(unpack(color))
@@ -64,7 +76,7 @@ function DrawManager:fillText(text, x, y, options)
     local size = options.size or 24
     local align = options.align or "left"
     local baseline = options.baseline or "top"
-    local shadow = options.shadow or true
+    local shadow = options.shadow ~= false
 
     -- Crear fuente con alta calidad
     -- local font = love.graphics.newFont("assets/fonts/slkscr.ttf",size)

@@ -1,0 +1,4 @@
+dist/
+#.vscode folder and all its contents
+.vscode/
+*.love

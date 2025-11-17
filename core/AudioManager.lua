@@ -1,6 +1,8 @@
 local AudioManager = {}
 
 function AudioManager:init(soundList)
+
+    print("> Initializing AudioManager...")
     self.sounds = {}
     self.muted = false
     self.soundList = soundList -- Guardar la lista para referencia
@@ -11,7 +13,7 @@ function AudioManager:init(soundList)
 
     self:preloadAll()
 
-    print("> AudioManager inicializado con " .. #soundList .. " sonidos.")
+    print("> AudioManager initialized: " .. #soundList .. " sounds.")
 end
 
 function AudioManager:loadSound(soundData)
@@ -52,7 +54,6 @@ function AudioManager:preloadAll()
             sound:seek(0)
         end
     end
-    print("> Todos los sonidos precargados")
 end
 
 function AudioManager:play(name)
@@ -62,7 +63,7 @@ function AudioManager:play(name)
 
     local pool = self.sounds[name]
     if not pool then
-        print("❌ Sonido no encontrado: " .. name)
+        print("❌ Sound not found: " .. name)
         return nil
     end
 
@@ -75,7 +76,7 @@ function AudioManager:play(name)
     end
 
     -- Si todos están en uso, crear uno nuevo dinámicamente (como fallback)
-    print("⚠️ Pool agotado para: " .. name .. ", creando instancia adicional")
+    print("⚠️ Pool exhausted for: " .. name .. ", creating additional instance")
     return self:createNewSoundInstance(name)
 end
 
@@ -143,13 +144,11 @@ function AudioManager:setMute(mute)
         end
     end
 
-    print(self.muted and "X Audio silenciado" or "+ Audio activado")
+    print(self.muted and "X Audio muted" or "+ Audio unmuted")
 end
 
 function AudioManager:toggleMute()
     self:setMute(not self.muted)
-
-    print(self.muted and "X Audio silenciado" or "+ Audio activado")
 end
 
 function AudioManager:isMuted()

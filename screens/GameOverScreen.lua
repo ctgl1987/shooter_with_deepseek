@@ -11,7 +11,7 @@ local GameOverScreen = BaseScreen:new({
 
     input = function(self, eventType, key)
         if eventType == "keydown" then
-            if key == "escape" then
+            if key == "back" then
                 ScreenManager:change("menu")
             end
         end

@@ -35,8 +35,8 @@ local MenuScreen = BaseScreen:new({
             end
         }}
 
-        -- Agregar opción de salida si estamos en NW.js
-        if love.system.getOS() == "Windows" or love.system.getOS() == "OS X" or love.system.getOS() == "Linux" then
+        -- Agregar opción de salida si es una plataforma de escritorio o android
+        if love.system.getOS() == "Windows" or love.system.getOS() == "OS X" or love.system.getOS() == "Linux" or love.system.getOS() == "Android" then
             table.insert(menuItems, {
                 name = function()
                     return "Quit"

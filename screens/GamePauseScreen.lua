@@ -31,8 +31,6 @@ local GamePauseScreen = BaseScreen:new({
         if eventType == "keydown" then
             if key == "back" then
                 GameScreenManager:pop()
-            elseif key == "m" then
-                -- AudioManager:toggleMute()
             else
                 self.menu:input(eventType, key)
             end

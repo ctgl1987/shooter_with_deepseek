@@ -20,19 +20,19 @@ function love.load()
     require("data.Texts")  -- Cargar textos del juego
     require("data.Assets") -- Cargar listas de imágenes y sonidos
 
+    print("")
+    print("*****************************")
+    print("*** " .. GAME_TITLE .. " ***")
+    print("*****************************")
+
     SetupViewport()
 
     CrtEffect = moonshine.chain(moonshine.effects.scanlines)
-    -- CrtEffect.chain(moonshine.effects.ctr)
-    -- CrtEffect.chain(moonshine.effects.vignette)
-    -- CrtEffect.chain(moonshine.effects.boxblur)
+    CrtEffect.scanlines.opacity = 0.0
 
 
     BlurEffect = moonshine.chain(moonshine.effects.boxblur)
-
-    -- CrtEffect.scanlines.width = 1
-    CrtEffect.scanlines.opacity = 0.3
-    -- CrtEffect.vignette.radius = 1.2
+    BlurEffect.boxblur.radius = 5
 
     Json = require("lib.json")
     Lume = require("lib.lume")
@@ -84,47 +84,31 @@ function love.load()
     -- Inicializar managers
     DrawManager:init()
     KeyManager:init()
-    AudioManager:init(SOUND_LIST)
-    ImageManager:init(IMAGE_LIST)
 
     -- >>> AGREGAR: Inicialización del gamepad <<<
 
     CurrenttGamepad = nil
-    local joysticks = love.joystick.getJoysticks()
-    if #joysticks > 0 then
-        CurrenttGamepad = joysticks[1]
-        print("Gamepad conectado: " .. CurrenttGamepad:getName())
-    end
+    -- local joysticks = love.joystick.getJoysticks()
+    -- if #joysticks > 0 then
+    --     CurrenttGamepad = joysticks[1]
+    --     print("Gamepad conectado: " .. CurrenttGamepad:getName())
+    -- end
 
     -- Cargar estado del juego
     LoadGame()
+
+    AudioManager:init(SOUND_LIST)
 
     -- Aplicar configuración de sonido
     AudioManager:setMute(not GameState.sound)
     -- Aplicar configuración de pantalla completa
     SetFullScreen(GameState.fullscreen)
 
-    ScreenManager = ScreenManager:new("main")
-    GameScreenManager = ScreenManager:new("game")
+    ImageManager:init(IMAGE_LIST)
+    ImageManager:load()
 
     SetupScreens()
-
     ScreenManager:change("start")
-end
-
--- >>> AGREGAR: Estas nuevas funciones de eventos <<<
-function love.joystickadded(joystick)
-    print("Gamepad conectado: " .. joystick:getName())
-    if CurrenttGamepad == nil then
-        CurrenttGamepad = joystick
-    end
-end
-
-function love.joystickremoved(joystick)
-    print("Gamepad desconectado: " .. joystick:getName())
-    if CurrenttGamepad == joystick then
-        CurrenttGamepad = nil
-    end
 end
 
 function love.update(dt)
@@ -159,6 +143,14 @@ function love.draw()
 
     -- Dibujar el canvas escalado en la ventana
     love.graphics.draw(canvas, offsetX, offsetY, 0, scale, scale)
+
+    --debug: mostrar cuantos gamepads conectados y sus nombres
+    local joysticks = love.joystick.getJoysticks()
+    love.graphics.setColor(1, 1, 1)
+    love.graphics.print("Gamepads connected: " .. #joysticks, 10, 10)
+    for i, joystick in ipairs(joysticks) do
+        love.graphics.print(">" .. joystick:getName(), 10, 10 + i * 20)
+    end
 end
 
 function love.keypressed(key)
@@ -198,6 +190,27 @@ function love.keyreleased(key)
     ScreenManager:input("keyup", action, key)
 end
 
+-- >>> AGREGAR: Manejo de conexión y desconexión de gamepads <<<
+function love.joystickadded(joystick)
+    print("Gamepad conectado: " .. joystick:getName())
+    --if name includes "fpc" or "accelerometer" return
+    local name = joystick:getName():lower()
+    if name:find("fpc") or name:find("accelerometer") then
+        print("Gamepad ignorado: " .. joystick:getName())
+        return
+    end
+    if CurrenttGamepad == nil then
+        CurrenttGamepad = joystick
+    end
+end
+
+function love.joystickremoved(joystick)
+    print("Gamepad desconectado: " .. joystick:getName())
+    if CurrenttGamepad == joystick then
+        CurrenttGamepad = nil
+    end
+end
+
 -- >>> AGREGAR: Manejo de botones presionados <<<
 function love.gamepadpressed(joystick, button)
     if joystick == CurrenttGamepad then
@@ -225,6 +238,10 @@ end
 -- Configuración de pantallas
 function SetupScreens()
     -- Pantallas principales
+    ScreenManager = ScreenManager:new("main")
+    GameScreenManager = ScreenManager:new("game")
+
+    -- Pantallas principales
     ScreenManager:add("start", StartScreen)
     ScreenManager:add("load", LoadScreen)
     ScreenManager:add("menu", MenuScreen)
@@ -244,17 +261,18 @@ end
 
 -- Sistema de guardado simplificado
 function LoadGame()
-    print("LoadGame: " .. love.filesystem.getSaveDirectory())
+    print("> Checking save directory: " .. love.filesystem.getSaveDirectory())
     if not love.filesystem.getInfo("savegame.json") then
         ResetGame()
         return
     end
 
-    print("Archivo de guardado encontrado. Cargando...")
+    print("> Save file found. Loading...")
 
     local data = love.filesystem.read("savegame.json")
     local success, gameState = pcall(Json.decode, data)
     if success and gameState then
+        print("> Game loaded successfully.")
         GameState = gameState
         return
     end
@@ -263,7 +281,7 @@ end
 function SaveGame()
     local data = Json.encode(GameState)
     love.filesystem.write("savegame.json", data)
-    print("SaveGame: " .. love.filesystem.getSaveDirectory())
+    print("> SaveGame: " .. love.filesystem.getSaveDirectory())
 end
 
 function ResetGame()
@@ -275,6 +293,7 @@ function ResetGame()
         },
         levelsCompleted = {}
     }
+    print("> No save file found. Starting new game.")
     SaveGame()
 end
 
@@ -304,17 +323,17 @@ function SetFullScreen(enabled)
         -- Entrar en pantalla completa
         local success = love.window.setFullscreen(true, "desktop")
         if success then
-            print("[]  Modo pantalla completa activado")
+            print("> Switch to Fullscreen mode!")
         end
     else
         -- Salir de pantalla completa
         love.window.setFullscreen(false)
         love.window.setMode(GAME_WIDTH, GAME_HEIGHT, {
             resizable = true,
-            minwidth = GAME_WIDTH,
-            minheight = GAME_HEIGHT
+            -- minwidth = GAME_WIDTH,
+            -- minheight = GAME_HEIGHT
         })
-        print("[] Modo ventana activado")
+        print("> Switch to Windowed mode!")
     end
 
     -- Actualizar viewport
