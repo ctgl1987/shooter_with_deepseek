@@ -145,12 +145,12 @@ function love.draw()
     love.graphics.draw(canvas, offsetX, offsetY, 0, scale, scale)
 
     --debug: mostrar cuantos gamepads conectados y sus nombres
-    local joysticks = love.joystick.getJoysticks()
-    love.graphics.setColor(1, 1, 1)
-    love.graphics.print("Gamepads connected: " .. #joysticks, 10, 10)
-    for i, joystick in ipairs(joysticks) do
-        love.graphics.print(">" .. joystick:getName(), 10, 10 + i * 20)
-    end
+    -- local joysticks = love.joystick.getJoysticks()
+    -- love.graphics.setColor(1, 1, 1)
+    -- love.graphics.print("Gamepads connected: " .. #joysticks, 10, 10)
+    -- for i, joystick in ipairs(joysticks) do
+    --     love.graphics.print(">" .. joystick:getName(), 10, 10 + i * 20)
+    -- end
 end
 
 function love.keypressed(key)
