@@ -3,7 +3,7 @@ GAME_WIDTH = 1280
 GAME_HEIGHT = 720
 ENTITY_SIZE = 48
 ITEM_SPAWN_CHANCE = 0.3
-BG_COLOR = { 0.04, 0, 0.13 }
+BG_COLOR = {0.04, 0, 0.13}
 
 local canvas = nil -- Canvas for rendering
 local scale = 1
@@ -17,7 +17,7 @@ local shaderEnabled = true
 function love.load()
     math.randomseed(os.time())
 
-    require("data.Texts")  -- Cargar textos del juego
+    require("data.Texts") -- Cargar textos del juego
     require("data.Assets") -- Cargar listas de imágenes y sonidos
 
     print("")
@@ -29,7 +29,6 @@ function love.load()
 
     CrtEffect = moonshine.chain(moonshine.effects.scanlines)
     CrtEffect.scanlines.opacity = 0.0
-
 
     BlurEffect = moonshine.chain(moonshine.effects.boxblur)
     BlurEffect.boxblur.radius = 5
@@ -105,10 +104,13 @@ function love.load()
     SetFullScreen(GameState.fullscreen)
 
     ImageManager:init(IMAGE_LIST)
-    ImageManager:load()
-
     SetupScreens()
+
     ScreenManager:change("start")
+
+    ImageManager:load(function()
+        print("> All images loaded.")
+    end)
 end
 
 function love.update(dt)
@@ -144,7 +146,7 @@ function love.draw()
     -- Dibujar el canvas escalado en la ventana
     love.graphics.draw(canvas, offsetX, offsetY, 0, scale, scale)
 
-    --debug: mostrar cuantos gamepads conectados y sus nombres
+    -- debug: mostrar cuantos gamepads conectados y sus nombres
     -- local joysticks = love.joystick.getJoysticks()
     -- love.graphics.setColor(1, 1, 1)
     -- love.graphics.print("Gamepads connected: " .. #joysticks, 10, 10)
@@ -166,7 +168,7 @@ function love.keypressed(key)
     end
 
     if key == "f9" then
-        --toogle shaders
+        -- toogle shaders
         if shaderEnabled then
             CrtEffect:disable("crt", "scanlines", "vignette")
             shaderEnabled = false
@@ -193,7 +195,7 @@ end
 -- >>> AGREGAR: Manejo de conexión y desconexión de gamepads <<<
 function love.joystickadded(joystick)
     print("Gamepad conectado: " .. joystick:getName())
-    --if name includes "fpc" or "accelerometer" return
+    -- if name includes "fpc" or "accelerometer" return
     local name = joystick:getName():lower()
     if name:find("fpc") or name:find("accelerometer") then
         print("Gamepad ignorado: " .. joystick:getName())
@@ -329,7 +331,7 @@ function SetFullScreen(enabled)
         -- Salir de pantalla completa
         love.window.setFullscreen(false)
         love.window.setMode(GAME_WIDTH, GAME_HEIGHT, {
-            resizable = true,
+            resizable = true
             -- minwidth = GAME_WIDTH,
             -- minheight = GAME_HEIGHT
         })
@@ -354,7 +356,7 @@ function DebugGameState()
     print("Levels Completed:")
     for levelId, levelData in pairs(GameState.levelsCompleted) do
         print("  Level " .. levelId .. ": " .. tostring(levelData.completed) .. " (score: " .. (levelData.score or 0) ..
-            ")")
+                  ")")
     end
     print("==================")
 end

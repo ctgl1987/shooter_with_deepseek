@@ -34,7 +34,7 @@ Levels.list = {
         spawnRate = 90,
         maxEnemiesOnScreen = 3,
         objective = "elimination",
-        enemiesToEliminate = 15,
+        enemiesToEliminate = 3,
         image_name = "bg_asteroids",
         endMessages = {
             "Initial contact made.",
