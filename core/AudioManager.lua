@@ -1,24 +1,24 @@
 local AudioManager = {}
 
 function AudioManager:init(soundList)
-
     print("> Initializing AudioManager...")
     self.sounds = {}
     self.muted = false
     self.soundList = soundList -- Guardar la lista para referencia
 
     for _, soundData in ipairs(soundList) do
+        soundData.volume = soundData.volume or 1 -- Valor por defecto si no está definido
+        soundData.pool = soundData.pool or 10 -- Valor por defecto si no está definido
+        soundData.loop = soundData.loop or false -- Valor por defecto si no está definido
         self:loadSound(soundData)
     end
-
-    self:preloadAll()
 
     print("> AudioManager initialized: " .. #soundList .. " sounds.")
 end
 
 function AudioManager:loadSound(soundData)
     -- Usar el mismo pool size que en JavaScript: 10 por defecto
-    local poolSize = soundData.pool or 10
+    local poolSize = soundData.pool
 
     -- Determinar el tipo de fuente
     local sourceType = soundData.loop and "stream" or "static"
@@ -31,35 +31,25 @@ function AudioManager:loadSound(soundData)
     for i = 1, poolSize do
         local success, sound = pcall(love.audio.newSource, soundData.src, sourceType)
 
+        -- si es distinto de nil, asignar valores por defecto
+        
         if success then
-            sound:setVolume(soundData.volume or 0.5)
-            sound:setLooping(soundData.loop or false)
-            sound:setVolume(self.muted and 0 or (soundData.volume or 0.5))
+            local volume = soundData.volume
+            local loop = soundData.loop
+
+            sound:setLooping(loop)
+            sound:setVolume(volume)
+
+            print("> Loaded sound: " .. soundData.name .. " (instance " .. i .. ") " .. sound:getVolume())
 
             table.insert(self.sounds[soundData.name], sound)
         else
             print("Error loading sound: " .. soundData.src)
         end
     end
-
-    -- print("> Cargado: " .. soundData.name .. " (pool: " .. poolSize .. ")")
-end
-
-function AudioManager:preloadAll()
-    for name, pool in pairs(self.sounds) do
-        for _, sound in ipairs(pool) do
-            -- Precargar reproduciendo y parando inmediatamente
-            sound:play()
-            sound:stop()
-            sound:seek(0)
-        end
-    end
 end
 
 function AudioManager:play(name)
-    if self.muted then
-        return nil
-    end
 
     local pool = self.sounds[name]
     if not pool then
@@ -88,9 +78,9 @@ function AudioManager:createNewSoundInstance(name)
             local success, newSound = pcall(love.audio.newSource, soundData.src, sourceType)
 
             if success then
-                newSound:setVolume(soundData.volume or 0.5)
-                newSound:setLooping(soundData.loop or false)
-                newSound:setVolume(self.muted and 0 or (soundData.volume or 0.5))
+                newSound:setVolume(soundData.volume)
+                newSound:setLooping(soundData.loop)
+                newSound:setVolume(soundData.volume)
 
                 table.insert(self.sounds[name], newSound)
                 newSound:play()
@@ -136,13 +126,20 @@ end
 
 function AudioManager:setMute(mute)
     self.muted = mute
-    local newVolume = self.muted and 0 or 1
 
-    for _, pool in pairs(self.sounds) do
-        for _, sound in ipairs(pool) do
-            sound:setVolume(newVolume)
-        end
-    end
+    love.audio.setVolume(self.muted and 0 or 1)
+    
+    -- Aplicar el volumen correcto según el estado de mute
+    -- for _, soundData in ipairs(self.soundList) do
+    --     local pool = self.sounds[soundData.name]
+    --     if pool then
+    --         local targetVolume = self.muted and 0 or soundData.volume
+            
+    --         for _, sound in ipairs(pool) do
+    --             sound:setVolume(targetVolume)
+    --         end
+    --     end
+    -- end
 
     print(self.muted and "X Audio muted" or "+ Audio unmuted")
 end

@@ -65,7 +65,6 @@ function love.load()
 
     -- Cargar pantallas
     StartScreen = require("screens.StartScreen")
-    LoadScreen = require("screens.LoadScreen")
     MenuScreen = require("screens.MenuScreen")
     IntroScreen = require("screens.IntroScreen")
     GameScreen = require("screens.GameScreen")
@@ -106,11 +105,10 @@ function love.load()
     ImageManager:init(IMAGE_LIST)
     SetupScreens()
 
-    ScreenManager:change("start")
-
     ImageManager:load(function()
-        print("> All images loaded.")
     end)
+    
+    ScreenManager:change("start")
 end
 
 function love.update(dt)
@@ -245,7 +243,6 @@ function SetupScreens()
 
     -- Pantallas principales
     ScreenManager:add("start", StartScreen)
-    ScreenManager:add("load", LoadScreen)
     ScreenManager:add("menu", MenuScreen)
     ScreenManager:add("intro", IntroScreen)
     ScreenManager:add("gameover", GameOverScreen)

@@ -209,13 +209,14 @@ SOUND_LIST = { {
     src = "assets/sounds/effects/coin.wav"
 }, {
     name = "explosion",
-    src = "assets/sounds/effects/explosion.ogg"
+    src = "assets/sounds/effects/explosion.ogg",
+    volume = 0
 }, {
     name = "menu",
     src = "assets/sounds/effects/menu.wav"
 }, {
     name = "bg",
-    src = "assets/sounds/music/bg.wav"
+    src = "assets/sounds/music/bg.wav",
 }, {
     name = "shield",
     src = "assets/sounds/effects/shield.wav"

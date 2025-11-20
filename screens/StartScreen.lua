@@ -2,20 +2,9 @@ local StartScreen = BaseScreen:new({
     name = "start",
 
     enter = function(self)
-
-    end,
-
-    input = function(self, eventType, key)
-        if eventType == "keydown" then
-            AudioManager:playLoop("bg")
-            ScreenManager:change("load")
-        end
-    end,
-
-    update = function(self, dt)
         InputManager:setContext("menu")
         AudioManager:playLoop("bg")
-        ScreenManager:change("load")
+        ScreenManager:change("menu")
     end,
 
     render = function(self)
