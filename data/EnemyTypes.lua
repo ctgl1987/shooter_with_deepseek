@@ -62,14 +62,15 @@ local EnemyTypes = {
         boss = true,
         name = "Hive Queen",
         color = {1, 1, 0.27}, -- #ffff44
-        image_name = "new_ship_yellow",
+        image_name = "Turtle",
         width = 144, -- ENTITY_SIZE * 3
         height = 144, -- ENTITY_SIZE * 3
-        vy = 12,
+        vy = 30,
         score = 200,
-        hp = 50,
+        hp = 150,
         build = function(e)
             e:addTask(EntityTasks.BossTask.create())
+            e:removeTask("EnemyFireTask")
         end
     }
 }

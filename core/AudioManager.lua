@@ -40,7 +40,7 @@ function AudioManager:loadSound(soundData)
             sound:setLooping(loop)
             sound:setVolume(volume)
 
-            print("> Loaded sound: " .. soundData.name .. " (instance " .. i .. ") " .. sound:getVolume())
+            -- print("> Loaded sound: " .. soundData.name .. " (instance " .. i .. ") " .. sound:getVolume())
 
             table.insert(self.sounds[soundData.name], sound)
         else
@@ -66,7 +66,7 @@ function AudioManager:play(name)
     end
 
     -- Si todos están en uso, crear uno nuevo dinámicamente (como fallback)
-    print("⚠️ Pool exhausted for: " .. name .. ", creating additional instance")
+    print("! Pool exhausted for: " .. name .. ", creating additional instance")
     return self:createNewSoundInstance(name)
 end
 

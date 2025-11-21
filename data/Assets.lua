@@ -39,31 +39,34 @@ local ships = { {
 }, {
     name = 'Ninja',
     src = 'assets/images/ships/Ninja.png'
-},{
+}, {
+    name = 'Turtle',
+    src = 'assets/images/ships/Turtle.png'
+}, {
     name = 'new_ship_blue',
     src = 'assets/images/ships/new_ship_blue.png'
-},{
+}, {
     name = 'new_ship_red',
     src = 'assets/images/ships/new_ship_red.png'
-},{
+}, {
     name = 'new_ship_green',
     src = 'assets/images/ships/new_ship_green.png'
-},{
+}, {
     name = 'new_ship_yellow',
     src = 'assets/images/ships/new_ship_yellow.png'
-},{
+}, {
     name = 'new_ship_purple',
     src = 'assets/images/ships/new_ship_purple.png'
-},{
+}, {
     name = 'new_ship_orange',
     src = 'assets/images/ships/new_ship_orange.png'
-},{
+}, {
     name = 'new_ship_brown',
     src = 'assets/images/ships/new_ship_brown.png'
-},{
+}, {
     name = 'new_ship_gray',
     src = 'assets/images/ships/new_ship_gray.png'
-},{
+}, {
     name = 'new_ship_white',
     src = 'assets/images/ships/new_ship_white.png'
 } }

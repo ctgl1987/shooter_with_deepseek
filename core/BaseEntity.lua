@@ -40,13 +40,7 @@ function BaseEntity:update(dt)
     self:emit("pre-update")
     
     -- Actualizar tareas
-    for i = #self.tasks, 1, -1 do
-        local task = self.tasks[i]
-        task:update(dt)
-        if task:isComplete() then
-            table.remove(self.tasks, i)
-        end
-    end
+    self:updateTasks(dt)
     
     self:emit("post-update")
 end
@@ -121,34 +115,47 @@ function BaseEntity:emit(event, data)
     end
 end
 
+function BaseEntity:getTask(name)
+    for i, task in ipairs(self.tasks) do
+        if task.name == name then
+            print("Found task: " .. name .. " at index " .. i)
+            return task
+        end
+    end
+    print("Task not found: " .. name)
+    return nil
+end
+
 -- Sistema de tareas
 function BaseEntity:addTask(task)
-    for i, existingTask in ipairs(self.tasks) do
+    for _, existingTask in pairs(self.tasks) do
         if existingTask.name == task.name then
-            existingTask:reset()
+            existingTask:onComplete()
+            -- Si la tarea ya existe, reemplazamos
+            print("Replaced existing task: " .. task.name)
+            self.tasks[task.name] = task
+            task:onStart(self)
             return
         end
     end
-    table.insert(self.tasks, task)
+    self.tasks[task.name] = task
     task:onStart(self)
 end
 
 function BaseEntity:removeTask(name)
-    for i, task in ipairs(self.tasks) do
-        if task.name == name then
-            task:onComplete()
-            table.remove(self.tasks, i)
-            break
-        end
+    local task = self.tasks[name]
+    if task then
+        task:onComplete()
+        self.tasks[name] = nil
+        print("Removed task: " .. name)
     end
 end
 
 function BaseEntity:updateTasks(dt)
-    for i = #self.tasks, 1, -1 do
-        local task = self.tasks[i]
+    for name, task in pairs(self.tasks) do
         task:update(dt)
         if task:isComplete() then
-            table.remove(self.tasks, i)
+            self:removeTask(name)
         end
     end
 end

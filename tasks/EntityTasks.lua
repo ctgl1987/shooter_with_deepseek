@@ -60,9 +60,10 @@ local EnemyFireTask = TaskSystem:create({
         self.entity = entity
         self.fireTimer = {
             value = 0,
-            limit = math.random(90, 150)
+            limit = math.random(90, 150),
+            randomChance = true
         }
-        self.chanceLimit = 0.7
+        self.chanceLimit = 0.70
     end,
 
     onUpdate = function(self, dt)
@@ -70,9 +71,9 @@ local EnemyFireTask = TaskSystem:create({
 
         if self.fireTimer.value >= self.fireTimer.limit then
             self.fireTimer.value = 0
-            self.fireTimer.limit = math.random(90, 150)
 
-            local chance = math.random()
+            local chance = self.fireTimer.randomChance and math.random() or 0
+            print("Enemy firing? " .. chance .. " <= " .. self.chanceLimit)
             if chance > self.chanceLimit then
                 return
             end
@@ -95,12 +96,13 @@ local EnemyFireTask = TaskSystem:create({
             bullet:addTask(EntityTasks.EntityMoveTask.create())
             AudioManager:play("shoot")
 
-            self.entity:emit("bullet-created", {
+            local dataEvent = {
                 bullets = { bullet }
-            })
-            self.entity:emit("enemy-fire", {
-                bullets = { bullet }
-            })
+            }
+
+            self.entity:emit("bullet-created", dataEvent)
+
+            self.entity:emit("enemy-fire", dataEvent)
         end
     end
 })
@@ -128,17 +130,22 @@ local BossTask = TaskSystem:create({
         self.entity = entity
         self.phase = 0
         self.timer = 0
-        self.vx = 2
+        self.vy = 50
+        self.vx = 80
 
         self.entity:centerTo({ x = GAME_WIDTH / 2 })
         self.entity.y = -self.entity.height
-        self.entity:removeTask("EnemyFireTask")
     end,
 
     onUpdate = function(self, dt)
         -- Movimiento lateral
-        if self.entity.x <= 0 or self.entity:right() >= GAME_WIDTH then
-            self.entity.vx = -self.entity.vx
+        if self.entity:right() >= GAME_WIDTH - ENTITY_SIZE then
+            self.entity.vx = self.entity.vx * -1
+            self.entity.x = self.entity.x - 1
+        end
+        if self.entity.x <= ENTITY_SIZE then
+            self.entity.vx = self.entity.vx * -1
+            self.entity.x = self.entity.x + 1
         end
 
         -- Fase 0: Entrada en pantalla
@@ -156,56 +163,64 @@ local BossTask = TaskSystem:create({
         end
 
         -- Fase 1: Rage mode al 25% de HP
-        if self.phase == 1 and self.entity.hp <= self.entity.maxHp * 0.25 then
-            self.phase = 2
-            self.entity.vx = self.entity.vx * 2
+        if self.phase == 1 then
+            if self.entity.hp <= self.entity.maxHp * 0.4 then
 
-            -- Encontrar y modificar la tarea de disparo
-            for _, task in ipairs(self.entity.tasks) do
-                if task.name == "EnemyFireTask" then
-                    task.chanceLimit = 1.1
-                    task.fireTimer.limit = 30
+                self.phase = 2
+                self.entity.vx = self.entity.vx * 2
 
-                    -- Configurar disparo triple
-                    task.entity.onBulletCreated = function(data)
-                        local baseBullet = data.bullets[1]
-
-                        -- Bala izquierda
-                        local leftBullet = BaseEntity:new({
-                            type = "bullet",
-                            owner = self.entity,
-                            width = ENTITY_SIZE * 0.05,
-                            height = ENTITY_SIZE * 0.2,
-                            color = { 1, 0, 0 },
-                            damage = 1,
-                            vy = baseBullet.vy
-                        })
-                        leftBullet:centerTo({
-                            x = self.entity:center().x - 20,
-                            y = self.entity:bottom()
-                        })
-                        leftBullet:addTask(EntityTasks.EntityMoveTask.create())
-                        table.insert(data.bullets, leftBullet)
-
-                        -- Bala derecha
-                        local rightBullet = BaseEntity:new({
-                            type = "bullet",
-                            owner = self.entity,
-                            width = ENTITY_SIZE * 0.05,
-                            height = ENTITY_SIZE * 0.2,
-                            color = { 1, 0, 0 },
-                            damage = 1,
-                            vy = baseBullet.vy
-                        })
-                        rightBullet:centerTo({
-                            x = self.entity:center().x + 20,
-                            y = self.entity:bottom()
-                        })
-                        rightBullet:addTask(EntityTasks.EntityMoveTask.create())
-                        table.insert(data.bullets, rightBullet)
-                    end
-                    break
+                -- Find and modify the fire task directly in the entity's task list
+                local fireTask = self.entity.tasks["EnemyFireTask"]
+                if fireTask then
+                    fireTask.fireTimer.randomChance = false
+                    fireTask.fireTimer.limit = 20
+                    fireTask.chanceLimit = 1
                 end
+
+                print("Boss has entered rage mode!")
+
+                -- Configurar disparo triple
+                self.entity:on("bullet-created", function(data)
+                    local baseBullet = data.bullets[1]
+
+                    -- Bala izquierda
+                    local leftBullet = BaseEntity:new({
+                        type = "bullet",
+                        owner = self.entity,
+                        width = ENTITY_SIZE * 0.05,
+                        height = ENTITY_SIZE * 0.2,
+                        color = { 1, 0, 0 },
+                        damage = 1,
+                        vy = baseBullet.vy
+                    })
+
+                    leftBullet:centerTo({
+                        x = self.entity:center().x - 20,
+                        y = self.entity:bottom()
+                    })
+
+                    leftBullet:addTask(EntityTasks.EntityMoveTask.create())
+                    table.insert(data.bullets, leftBullet)
+
+                    -- Bala derecha
+                    local rightBullet = BaseEntity:new({
+                        type = "bullet",
+                        owner = self.entity,
+                        width = ENTITY_SIZE * 0.05,
+                        height = ENTITY_SIZE * 0.2,
+                        color = { 1, 0, 0 },
+                        damage = 1,
+                        vy = baseBullet.vy
+                    })
+
+                    rightBullet:centerTo({
+                        x = self.entity:center().x + 20,
+                        y = self.entity:bottom()
+                    })
+
+                    rightBullet:addTask(EntityTasks.EntityMoveTask.create())
+                    table.insert(data.bullets, rightBullet)
+                end)
             end
         end
     end

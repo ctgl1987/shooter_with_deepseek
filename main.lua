@@ -36,8 +36,6 @@ function love.load()
     Json = require("lib.json")
     Lume = require("lib.lume")
 
-    Serpent = require("core.serpent")
-
     -- Cargar módulos core y asignarlos a variables globales
     DrawManager = require("core.DrawManager")
     KeyManager = require("core.KeyManager")
@@ -269,11 +267,14 @@ function LoadGame()
     print("> Save file found. Loading...")
 
     local data = love.filesystem.read("savegame.json")
-    local success, gameState = pcall(Json.decode, data)
+    print(success, gameState)
     if success and gameState then
         print("> Game loaded successfully.")
         GameState = gameState
         return
+    else
+        print("> Error loading save file. Starting new game.")
+        ResetGame()
     end
 end
 

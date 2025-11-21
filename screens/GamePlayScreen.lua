@@ -97,7 +97,7 @@ local GamePlayScreen = BaseScreen:new({
         end)
 
         self.player:on("damage-received", function(damageEvent)
-            self:spawnParticles(self.player:center())
+            self:spawnParticles(damageEvent.source:center())
 
             self.player.hp = self.player.hp - damageEvent.damage
 
@@ -188,6 +188,10 @@ local GamePlayScreen = BaseScreen:new({
             self.player:addTask(PowerupTasks.RapidFirePowerupTask.create())
             self.player:addTask(PowerupTasks.LifeDrainPowerupTask.create())
             self.player:addTask(PowerupTasks.FreezePowerupTask.create())
+        end)
+        CheatManager:register("shield", function(cheat)
+            print("Shield Powerup Activated!")
+            self.player:addTask(PowerupTasks.ShieldPowerupTask.create())
         end)
 
         CheatManager:register("healme", function(cheat)
@@ -300,8 +304,8 @@ local GamePlayScreen = BaseScreen:new({
             end
         end)
 
-        enemy:on("damage-received", function()
-            self:spawnParticles(enemy:center())
+        enemy:on("damage-received", function(damageEvent)
+            self:spawnParticles(damageEvent.source:center())
         end)
 
         enemy:on("enemy-destroyed", function()
@@ -593,7 +597,8 @@ local GamePlayScreen = BaseScreen:new({
             if Utils.collision(enemy, self.player) then
                 enemy.dead = true
                 local damageEvent = {
-                    damage = enemy.hp
+                    damage = enemy.hp,
+                    source = enemy
                 }
                 self.player:emit("damage-received", damageEvent)
             end
@@ -642,7 +647,10 @@ local GamePlayScreen = BaseScreen:new({
                         target = enemy
                     })
                     enemy.hp = enemy.hp - bullet.damage
-                    enemy:emit("damage-received")
+                    enemy:emit("damage-received", {
+                        damage = bullet.damage,
+                        source = bullet
+                    })
 
                     if enemy.hp <= 0 then
                         AudioManager:play("explosion")
@@ -676,7 +684,8 @@ local GamePlayScreen = BaseScreen:new({
             if Utils.collision(bullet, self.player) then
                 bullet.dead = true
                 local damageEvent = {
-                    damage = bullet.damage
+                    damage = bullet.damage,
+                    source = bullet
                 }
                 self.player:emit("damage-received", damageEvent)
             end
@@ -816,13 +825,14 @@ local GamePlayScreen = BaseScreen:new({
         })
 
         --draw hp text centered on the hp bar
-        DrawManager:fillText(self.player.hp .. "/" .. self.player.maxHp, offsetX + barWidth / 2, offsetY + barHeight / 2, {
-            color = "white",
-            align = "center",
-            baseline = "middle",
-            size = 16,
-            shadow = false,
-        })
+        DrawManager:fillText(self.player.hp .. "/" .. self.player.maxHp, offsetX + barWidth / 2, offsetY + barHeight / 2,
+            {
+                color = "white",
+                align = "center",
+                baseline = "middle",
+                size = 16,
+                shadow = false,
+            })
 
         offsetY = offsetY + 35
 
@@ -875,7 +885,7 @@ local GamePlayScreen = BaseScreen:new({
 
         -- Tareas/powerups del jugador
         offsetY = GAME_HEIGHT - 20
-        for _, task in ipairs(self.player.tasks) do
+        for _, task in pairs(self.player.tasks) do
             if task.powerup then
                 DrawManager:fillText(task.name, 10, offsetY, {
                     color = "yellow",
@@ -1031,20 +1041,21 @@ local GamePlayScreen = BaseScreen:new({
             })
         end
 
-        -- Renderizar partículas
-        for _, particle in ipairs(self.particles) do
-            particle:render()
-        end
+
 
         -- Renderizar entidades
         for _, enemy in ipairs(self.enemies) do
             enemy:render()
         end
 
+        -- Renderizar partículas
+        for _, particle in ipairs(self.particles) do
+            particle:render()
+        end
+
         for _, item in ipairs(self.items) do
             item:render()
         end
-
 
         self.player:render()
 

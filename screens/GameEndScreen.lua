@@ -18,6 +18,10 @@ local GameEndScreen = BaseScreen:new({
         end
     end,
 
+    update = function(self, dt)
+        InputManager:setContext("menu")
+    end,
+
     render = function(self)
         DrawManager:fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT, {
             color = BG_COLOR

@@ -28,6 +28,7 @@ local ShieldPowerupTask = TaskSystem:create({
     end,
 
     onComplete = function(self)
+        print("Shield powerup ended")
         self.renderListener:remove()
         self.damageListener:remove()
     end
