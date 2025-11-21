@@ -3,7 +3,7 @@ GAME_WIDTH = 1280
 GAME_HEIGHT = 720
 ENTITY_SIZE = 48
 ITEM_SPAWN_CHANCE = 0.3
-BG_COLOR = {0.04, 0, 0.13}
+BG_COLOR = "#0A0022"
 
 local canvas = nil -- Canvas for rendering
 local scale = 1
@@ -17,25 +17,22 @@ local shaderEnabled = true
 function love.load()
     math.randomseed(os.time())
 
+    Utils = require("core.Utils")
+    
+
     require("data.Texts") -- Cargar textos del juego
-    require("data.Assets") -- Cargar listas de imágenes y sonidos
+    require("data.Assets")
 
     print("")
     print("*****************************")
     print("*** " .. GAME_TITLE .. " ***")
     print("*****************************")
 
-    SetupViewport()
-
-    CrtEffect = moonshine.chain(moonshine.effects.scanlines)
-    CrtEffect.scanlines.opacity = 0.0
-
-    BlurEffect = moonshine.chain(moonshine.effects.boxblur)
-    BlurEffect.boxblur.radius = 5
-
+    
     Json = require("lib.json")
     Lume = require("lib.lume")
 
+    
     -- Cargar módulos core y asignarlos a variables globales
     DrawManager = require("core.DrawManager")
     KeyManager = require("core.KeyManager")
@@ -44,7 +41,32 @@ function love.load()
     InputManager = require("core.InputManager")
     ScreenManager = require("core.ScreenManager")
 
-    Utils = require("core.Utils")
+    UI = require("core.UI")
+    
+    CurrenttGamepad = nil
+    
+    LoadGame()
+
+    SetFullScreen(GameState.fullscreen)
+
+    SetupViewport()
+
+    AudioManager:init(SOUND_LIST)
+
+    AudioManager:setMute(not GameState.sound)
+
+    ImageManager:init(IMAGE_LIST)
+
+    ImageManager:load(function()
+    end)
+
+    CrtEffect = moonshine.chain(moonshine.effects.scanlines)
+    CrtEffect.scanlines.opacity = 0.0
+
+    BlurEffect = moonshine.chain(moonshine.effects.boxblur)
+    BlurEffect.boxblur.radius = 5
+
+
 
     BaseEntity = require("core.BaseEntity")
     BaseScreen = require("core.BaseScreen")
@@ -81,36 +103,14 @@ function love.load()
     DrawManager:init()
     KeyManager:init()
 
-    -- >>> AGREGAR: Inicialización del gamepad <<<
-
-    CurrenttGamepad = nil
-    -- local joysticks = love.joystick.getJoysticks()
-    -- if #joysticks > 0 then
-    --     CurrenttGamepad = joysticks[1]
-    --     print("Gamepad conectado: " .. CurrenttGamepad:getName())
-    -- end
-
-    -- Cargar estado del juego
-    LoadGame()
-
-    AudioManager:init(SOUND_LIST)
-
-    -- Aplicar configuración de sonido
-    AudioManager:setMute(not GameState.sound)
-    -- Aplicar configuración de pantalla completa
-    SetFullScreen(GameState.fullscreen)
-
-    ImageManager:init(IMAGE_LIST)
     SetupScreens()
 
-    ImageManager:load(function()
-    end)
-    
     ScreenManager:change("start")
 end
 
 function love.update(dt)
     ScreenManager:update(dt)
+    UpdateViewport()
 end
 
 function love.draw()
@@ -122,18 +122,18 @@ function love.draw()
     love.graphics.setCanvas(canvas)
 
     -- Limpiar el canvas
-    love.graphics.clear()
+    -- love.graphics.clear()
 
     CrtEffect(function()
         -- Limpiar con color de fondo
-        love.graphics.clear(BG_COLOR)
+        DrawManager:fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT, BG_COLOR)
         -- Dibujar la pantalla
         ScreenManager:render()
         -- Mostrar FPS
         DrawManager:fillText("FPS: " .. tostring(love.timer.getFPS()), GAME_WIDTH - 10, GAME_HEIGHT - 10, {
             align = 'right',
             baseline = 'bottom',
-            color = 'white'
+            color = '#FFFFFF'
         })
     end)
 
@@ -144,7 +144,7 @@ function love.draw()
 
     -- debug: mostrar cuantos gamepads conectados y sus nombres
     -- local joysticks = love.joystick.getJoysticks()
-    -- love.graphics.setColor(1, 1, 1)
+
     -- love.graphics.print("Gamepads connected: " .. #joysticks, 10, 10)
     -- for i, joystick in ipairs(joysticks) do
     --     love.graphics.print(">" .. joystick:getName(), 10, 10 + i * 20)

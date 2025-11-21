@@ -6,7 +6,7 @@ local IntroScreen = BaseScreen:new({
     enter = function(self)
         self.currentLine = 0
         self.counter = 0
-        self.bg = Utils.createScrollingBackground(ImageManager:get("bg_intro"), 0)
+        self.bg = UI.createScrollingBackground(ImageManager:get("bg_intro"), 0)
 
         self.briefText = GAME_BRIEF
     end,
@@ -45,7 +45,7 @@ local IntroScreen = BaseScreen:new({
         self.bg:render()
 
         -- Draw semi-transparent overlay
-        DrawManager:fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT, {color = {0, 0, 0, 0.5}})
+        DrawManager:fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT, {color = "#00000077"})
 
         local totalLines = #self.briefText
         local lineHeight = 30

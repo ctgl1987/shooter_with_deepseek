@@ -54,7 +54,7 @@ end
 function CheatManager:render()
     -- Opcional: mostrar buffer de cheats para debugging
     DrawManager:fillText("Cheat Buffer: " .. table.concat(self.buffer, ""), 10, GAME_HEIGHT - 40, {
-        color = "yellow",
+        color = "#FFFF00",
         size = 14,
         baseline = "top"
     })

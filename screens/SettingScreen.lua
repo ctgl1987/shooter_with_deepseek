@@ -5,7 +5,7 @@ local SettingScreen = BaseScreen:new({
     
     enter = function(self)
 
-        self.menu = Utils.createMenu({
+        self.menu = UI.createMenu({
             {
                 name = function() 
                     return "Sound: " .. (AudioManager:isMuted() and "OFF" or "ON")

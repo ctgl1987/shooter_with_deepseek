@@ -4,7 +4,7 @@ local LevelSelectScreen = BaseScreen:new({
     name = "game_level_select",
 
     enter = function(self, data)
-        self.bg = Utils.createScrollingBackground(ImageManager:get("bg_intro"), 0)
+        self.bg = UI.createScrollingBackground(ImageManager:get("bg_intro"), 0)
         self.levels = {}
 
         for i, level in ipairs(Levels.list) do
@@ -58,14 +58,14 @@ local LevelSelectScreen = BaseScreen:new({
         self.bg:render()
 
         -- Draw semi-transparent overlay
-        DrawManager:fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT, {color = {0, 0, 0, 0.5}})
+        DrawManager:fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT, {color = "#00000088"})
 
         DrawManager:fillText("Select Level", GAME_WIDTH * 0.5, GAME_HEIGHT * 0.1,
             { size = 30, align = "center" })
 
         for i, level in ipairs(self.levels) do
             local selected = self.selectedLevel == i
-            local color = level.unlocked and "white" or "gray"
+            local color = level.unlocked and "#FFFFFF" or "#888888"
             if level.finished then
                 color = "green"
             end

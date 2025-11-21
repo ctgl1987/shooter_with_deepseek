@@ -154,7 +154,7 @@ Levels.list = {
             "All systems point to Hive Queen location.",
             "Final assault imminent."
         },
-        tint = { 0, 0, 0, 0.7 },
+        tint = "#000000B3", -- Hex color string with alpha (black with 70% opacity)
     }),
     CreateLevel(7, {
         name = "The Heart of the Swarm",

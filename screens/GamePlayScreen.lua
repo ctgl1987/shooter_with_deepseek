@@ -41,7 +41,7 @@ local GamePlayScreen = BaseScreen:new({
         self:createBackground()
         self:setupCheats()
 
-        self.redFlash = Utils.createScreenFlasher({ 1, 0, 0, 0.2 }, 5)
+        self.redFlash = UI.createScreenFlasher({1, 0, 0, 0.2}, 5)
     end,
 
     createPlayer = function(self)
@@ -52,7 +52,7 @@ local GamePlayScreen = BaseScreen:new({
             y = GAME_HEIGHT - ENTITY_SIZE * 1.5,
             width = ENTITY_SIZE,
             height = ENTITY_SIZE,
-            color = { 0, 0, 0, 0 }, -- transparent
+            color = "#00000000", -- transparent
             hp = 10,
             maxHp = 10,
             friction = 0.8,
@@ -78,7 +78,7 @@ local GamePlayScreen = BaseScreen:new({
             self.player.weapon:update()
             self.player.sprite:update()
 
-            --if player hp below 30%, keep player.weak between 0 and 1 using math.cos
+            -- if player hp below 30%, keep player.weak between 0 and 1 using math.cos
             if self.player.hp / self.player.maxHp <= 0.3 then
                 self.player.weak = math.cos(love.timer.getTime() * 10) * 0.5 + 0.5
 
@@ -86,10 +86,10 @@ local GamePlayScreen = BaseScreen:new({
                 if math.random() < 0.3 then -- 30% de probabilidad por frame
                     self:spawnParticles(self.player:center(), {
                         count = 3,
-                        color = { 1, 0, 0, 0.8 }, -- rojo
+                        color = "#FF0000CC", -- rojo
                         ttl = 20,
-                        spread = 10,              -- poca dispersión
-                        speed = 15                -- baja velocidad
+                        spread = 10, -- poca dispersión
+                        speed = 15 -- baja velocidad
                     })
                 end
             else
@@ -98,7 +98,7 @@ local GamePlayScreen = BaseScreen:new({
         end)
 
         self.player:on("damage-received", function(damageEvent)
-            self:spawnParticles(damageEvent.source:center())
+            self:spawnParticles(self.player:center())
 
             self.player.hp = self.player.hp - damageEvent.damage
 
@@ -134,7 +134,7 @@ local GamePlayScreen = BaseScreen:new({
         self.player:on("post-render", function()
             local options = {
                 rotate = self.player.rotate or 0,
-                color = { 1, 1 - self.player.weak, 1 - self.player.weak, 1 }
+                color = {1, 1 - self.player.weak, 1 - self.player.weak, 1}
             }
 
             self.player.sprite:render(self.player:bounds(), options);
@@ -147,7 +147,7 @@ local GamePlayScreen = BaseScreen:new({
 
     createBackground = function(self)
         local bgImage = ImageManager:get(self.level.image_name or "bg_space")
-        self.bg = Utils.createScrollingBackground(bgImage, 60)
+        self.bg = UI.createScrollingBackground(bgImage, 60)
     end,
 
     setupCheats = function(self)
@@ -171,10 +171,10 @@ local GamePlayScreen = BaseScreen:new({
                 cheat.l2 = self.player:on("pre-render", function()
                     local pos = self.player:center()
                     DrawManager:fillCircle(pos.x, pos.y, self.player.width * 1.5, {
-                        color = { 1, 1, 0, 0.07 }
+                        color = "#FFFF0012" -- Converted to hex color with alpha
                     })
                     DrawManager:fillText("GOD MODE", self.player:center().x, self.player.y - 50, {
-                        color = "yellow",
+                        color = "#FFFF00",
                         align = "center"
                     })
                 end)
@@ -198,7 +198,9 @@ local GamePlayScreen = BaseScreen:new({
         CheatManager:register("healme", function(cheat)
             print("Heal Me Activated!")
             -- self.player.hp = self.player.maxHp
-            self.player:emit("hp-restored", { amount = self.player.maxHp })
+            self.player:emit("hp-restored", {
+                amount = self.player.maxHp
+            })
         end)
 
         CheatManager:register("weak", function(cheat)
@@ -232,7 +234,7 @@ local GamePlayScreen = BaseScreen:new({
             y = -ENTITY_SIZE,
             width = template.width or ENTITY_SIZE,
             height = template.height or ENTITY_SIZE,
-            color = { 0, 0, 0, 0 }, -- transparent
+            color = "#00000000", -- transparent
             maxHp = template.hp,
             hp = template.hp,
             vy = template.vy,
@@ -258,7 +260,6 @@ local GamePlayScreen = BaseScreen:new({
 
         enemy:on("post-render", function()
             -- draw white rectangle around enemy for debugging
-            -- DrawManager:fillRect(enemy.x, enemy.y, enemy.width, enemy.height, {color = "white"})
 
             local dst = {
                 x = enemy.x,
@@ -276,14 +277,14 @@ local GamePlayScreen = BaseScreen:new({
             -- Dibujar nombre
             r = r + 2
             DrawManager:fillText(enemy.name, enemy:center().x, enemy.y - 20, {
-                color = "white",
+                color = "#FFFFFF",
                 align = "center",
                 baseline = "middle",
                 size = 16
             })
 
             -- Barra de HP
-            Utils.drawHpBar({
+            UI.drawHpBar({
                 value = enemy.hp,
                 max = enemy.maxHp,
                 x = enemy.x,
@@ -307,12 +308,12 @@ local GamePlayScreen = BaseScreen:new({
         end)
 
         enemy:on("damage-received", function(damageEvent)
-            self:spawnParticles(damageEvent.source:center())
+            self:spawnParticles(enemy:center())
 
             enemy.hp = enemy.hp - damageEvent.damage
 
             if enemy.hp <= 0 then
-                
+
                 enemy:emit("enemy-destroyed")
                 enemy.dead = true
             end
@@ -346,7 +347,7 @@ local GamePlayScreen = BaseScreen:new({
             owner = self.player,
             width = ENTITY_SIZE * 0.05,
             height = ENTITY_SIZE * 0.2,
-            color = { 1, 0, 0 },
+            color = "#FF0000",
             damage = 1,
             vy = -360
         })
@@ -360,7 +361,7 @@ local GamePlayScreen = BaseScreen:new({
         AudioManager:play("shoot")
 
         local data = {
-            bullets = { bullet }
+            bullets = {bullet}
         }
         self.player:emit("bullet-created", data)
 
@@ -381,7 +382,7 @@ local GamePlayScreen = BaseScreen:new({
             width = ENTITY_SIZE * 0.75,
             height = ENTITY_SIZE * 0.75,
             vy = 120,
-            color = { 0, 0, 0, 0 } -- transparent
+            color = "#00000000" -- transparent
         })
 
         -- Extender con propiedades del template
@@ -395,14 +396,18 @@ local GamePlayScreen = BaseScreen:new({
         item.image = ImageManager:get(template.image_name)
 
         item:on("post-render", function()
+
             local color = template.color
+            local parsedColor = DrawManager:parseColor(color)
 
-            love.graphics.setColor(color[1], color[2], color[3], 0.2)
-            love.graphics.circle("fill", item:center().x, item:center().y, item.width * 0.75)
-
-            -- Núcleo brillante
-            love.graphics.setColor(color[1], color[2], color[3], 0.4)
-            love.graphics.circle("fill", item:center().x, item:center().y, item.width * 0.6)
+            local pos = item:center()
+            for i = 1, 2 do
+                local radius = 50 - (i * 20)
+                --dark blue glow
+                DrawManager:fillCircle(pos.x, pos.y, radius, {
+                    color = {parsedColor[1], parsedColor[2], parsedColor[3], i / 10},
+                })
+            end
 
             local dst = {
                 x = item.x,
@@ -434,7 +439,7 @@ local GamePlayScreen = BaseScreen:new({
             x = GAME_WIDTH / 2,
             y = GAME_HEIGHT - 30,
             -- transparent
-            color = { 0, 0, 0, 0 }
+            color = "#00000000"
         })
 
         textEntity:on("post-update", function()
@@ -448,7 +453,7 @@ local GamePlayScreen = BaseScreen:new({
             local alpha = textEntity.ttl / ttl
             DrawManager:fillText(textEntity.text, textEntity.x + (offsetX or 0), textEntity.y + (offsetY or 0), {
                 align = "center",
-                color = { 1, 1, 1, alpha }
+                color = {1, 1, 1, alpha}
             })
         end
 
@@ -458,10 +463,10 @@ local GamePlayScreen = BaseScreen:new({
     spawnParticles = function(self, position, options)
         options = options or {}
         local count = options.count or 10
-        local baseColor = options.color or { 1, 0.65, 0 } -- naranja por defecto
+        local baseColor = options.color or "#FFA600" -- naranja por defecto
         local ttl = options.ttl or 30
-        local spread = options.spread or 10               -- rango de dispersión
-        local speed = options.speed or 100                -- rango de dispersión
+        local spread = options.spread or 10 -- rango de dispersión
+        local speed = options.speed or 100 -- rango de dispersión
         local size = ENTITY_SIZE * 0.05
 
         for i = 1, count do
@@ -485,7 +490,8 @@ local GamePlayScreen = BaseScreen:new({
                     particle.dead = true
                 end
                 local alpha = particle.ttl / ttl
-                particle.color = { baseColor[1], baseColor[2], baseColor[3], alpha }
+                local parsedColor = DrawManager:parseColor(baseColor)
+                particle.color = {parsedColor[1], parsedColor[2], parsedColor[3], alpha}
             end)
 
             table.insert(self.particles, particle)
@@ -667,14 +673,14 @@ local GamePlayScreen = BaseScreen:new({
                     })
 
                     bullet.dead = true
-                    
-                    --notificar damage
+
+                    -- notificar damage
                     enemy:emit("damage-received", {
                         damage = bullet.damage,
                         source = bullet
                     })
 
-                    --spawn item if enemy is dead
+                    -- spawn item if enemy is dead
                     if enemy.dead then
                         local chance = math.random()
 
@@ -746,7 +752,7 @@ local GamePlayScreen = BaseScreen:new({
                         self:spawnParticles(enemy:center())
                         AudioManager:play("explosion")
                     end
-                    --shake screen
+                    -- shake screen
                     ShakeDuration = 30
                 end
             end
@@ -785,7 +791,6 @@ local GamePlayScreen = BaseScreen:new({
         self.bg:update(dt)
         self.player:update(dt)
 
-
         -- Mantener al jugador en pantalla
         self.player.x = math.max(ENTITY_SIZE * 0.5,
             math.min(self.player.x, GAME_WIDTH - self.player.width - ENTITY_SIZE * 0.5))
@@ -813,27 +818,12 @@ local GamePlayScreen = BaseScreen:new({
         local innerBarWidth = barWidth - (padding * 2)
         local hpBarWidth = math.floor((self.player.hp / self.player.maxHp) * innerBarWidth)
 
-        -- HP
-        -- DrawManager:fillText("HP: " .. self.player.hp .. "/" .. self.player.maxHp, 10, offsetY, {
-        --     color = "yellow",
-        --     size = 24
-        -- })
-
         local percentHp = self.player.hp / self.player.maxHp
 
-        local hpColor = { Lume.color("#00FF00", 0.9) }
-
-        if percentHp <= 0.5 then
-            hpColor = { Lume.color("#FFFF00", 0.9) }
-        end
-        if percentHp <= 0.3 then
-            hpColor = { Lume.color("#FF0000", 0.9) }
-        end
-
-        hpColor = { Lume.color("#FF0000", 0.9) }
+        local hpColor = "#FF0000"
 
         DrawManager:strokeRect(offsetX, offsetY, barWidth, barHeight, {
-            color = "white",
+            color = "#FFFFFF",
             lineWidth = 1,
             borderRadius = 2
         })
@@ -843,39 +833,38 @@ local GamePlayScreen = BaseScreen:new({
         })
 
         DrawManager:fillRect(offsetX + padding, offsetY + padding, hpBarWidth, padding, {
-            color = { 1, 1, 1, 0.4 }
+            color = "#FFFFFF66" -- Blanco con 40% de opacidad en formato hexadecimal
         })
 
-        --draw hp text centered on the hp bar
-        DrawManager:fillText(self.player.hp .. "/" .. self.player.maxHp, offsetX + barWidth / 2, offsetY + barHeight / 2,
-            {
-                color = "white",
+        -- draw hp text centered on the hp bar
+        DrawManager:fillText(self.player.hp .. "/" .. self.player.maxHp, offsetX + barWidth / 2,
+            offsetY + barHeight / 2, {
+                color = "#FFFFFF",
                 align = "center",
                 baseline = "middle",
                 size = 16,
-                shadow = false,
+                shadow = false
             })
 
         offsetY = offsetY + 35
 
         DrawManager:strokeRect(offsetX, offsetY, barWidth, barHeight, {
-            color = "white",
+            color = "#FFFFFF",
             lineWidth = 1,
             borderRadius = 2
         })
 
         -- Score
         DrawManager:fillText("SCORE:    " .. string.format("%07d", self.score), 16, offsetY + 2, {
-            color = "yellow",
-            size = 16,
+            color = "#FFFF00",
+            size = 16
         })
-
 
         offsetY = offsetY + 35
 
         -- Bombs
         DrawManager:fillText("BOMBS: " .. self.player.bombs, 12, offsetY, {
-            color = "yellow",
+            color = "#FFFF00",
             size = 16
         })
         offsetY = offsetY + 30
@@ -884,7 +873,7 @@ local GamePlayScreen = BaseScreen:new({
         local durationSeconds = math.floor(self.duration / 60)
         DrawManager:fillText("Time: " .. durationSeconds .. "s", GAME_WIDTH - 10, 10, {
             align = "right",
-            color = "yellow",
+            color = "#FFFF00",
             size = 16
         })
 
@@ -901,7 +890,7 @@ local GamePlayScreen = BaseScreen:new({
 
         DrawManager:fillText(objectiveText, GAME_WIDTH / 2, 10, {
             align = "center",
-            color = "yellow",
+            color = "#FFFF00",
             size = 24
         })
 
@@ -910,20 +899,20 @@ local GamePlayScreen = BaseScreen:new({
         for _, task in pairs(self.player.tasks) do
             if task.powerup then
                 DrawManager:fillText(task.name, 10, offsetY, {
-                    color = "yellow",
+                    color = "#FFFF00",
                     align = "left",
                     baseline = "bottom"
                 })
 
                 -- Barra de duración del powerup
-                Utils.drawHpBar({
+                UI.drawHpBar({
                     value = task.time,
                     max = task.duration,
                     x = 10,
                     y = offsetY + 10,
                     width = 150,
-                    backColor = 'gray',
-                    color = 'yellow'
+                    backColor = "#777777",
+                    color = "#FFFF00"
                 })
 
                 offsetY = offsetY - 35
@@ -954,7 +943,7 @@ local GamePlayScreen = BaseScreen:new({
             introOffsetY, {
                 size = 30,
                 align = "center",
-                color = { 1, 1, 0, alpha }
+                color = {1, 1, 0, alpha}
             })
         introOffsetY = introOffsetY + 40
 
@@ -968,7 +957,7 @@ local GamePlayScreen = BaseScreen:new({
         for _, msg in ipairs(messages) do
             DrawManager:fillText(msg, GAME_WIDTH * 0.5, introOffsetY, {
                 align = "center",
-                color = { 1, 1, 1, alpha }
+                color = {1, 1, 1, alpha}
             })
             introOffsetY = introOffsetY + 30
         end
@@ -995,14 +984,14 @@ local GamePlayScreen = BaseScreen:new({
         local startX = (GAME_WIDTH - boxWidth) / 2
         local startY = (GAME_HEIGHT - boxHeight) / 2
 
-        --draw semitransparent background for the box
+        -- draw semitransparent background for the box
         DrawManager:fillRect(startX, startY, boxWidth, boxHeight, {
-            color = { 0, 0, 0, 0.5 * alpha },
+            color = {0, 0, 0, 0.5 * alpha},
             borderRadius = 8
         })
 
         DrawManager:strokeRect(startX, startY, boxWidth, boxHeight, {
-            color = { 1, 1, 1, alpha },
+            color = {1, 1, 1, alpha},
             lineWidth = 2,
             borderRadius = 8
         })
@@ -1010,13 +999,13 @@ local GamePlayScreen = BaseScreen:new({
         for i, msg in ipairs(self.level.endMessages) do
             DrawManager:fillText(msg, startX + characterImage:getWidth() + 40, startY - 20 + (i * 30), {
                 size = 24,
-                color = { 1, 1, 0, alpha }
+                color = {1, 1, 0, alpha}
             })
         end
 
         -- white box for the character image
         DrawManager:fillRect(startX + 10, startY + 10, characterImage:getWidth() + 20, boxHeight - 20, {
-            color = { 1, 1, 1, 0.1 * alpha },
+            color = {1, 1, 1, 0.1 * alpha},
             borderRadius = 8
         })
 
@@ -1041,7 +1030,7 @@ local GamePlayScreen = BaseScreen:new({
         if ShakeDuration > 0 then
             love.graphics.push()
             local shakeX = Utils.randomInt(-ShakeMagnitude, ShakeMagnitude)
-            local shakeY = 0 --Utils.randomInt(-ShakeMagnitude, ShakeMagnitude)
+            local shakeY = 0 -- Utils.randomInt(-ShakeMagnitude, ShakeMagnitude)
             love.graphics.translate(shakeX, shakeY)
         end
         if self.warped then
@@ -1054,12 +1043,7 @@ local GamePlayScreen = BaseScreen:new({
 
         if self.level.tint then
             DrawManager:fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT, {
-                color = {
-                    self.level.tint[1],
-                    self.level.tint[2],
-                    self.level.tint[3],
-                    self.level.tint[4] or 0.2
-                }
+                color = self.level.tint
             })
         end
 

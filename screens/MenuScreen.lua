@@ -1,10 +1,8 @@
-
-
 local MenuScreen = BaseScreen:new({
     name = "menu",
 
     enter = function(self)
-        self.bg = Utils.createScrollingBackground(ImageManager:get("bg_title"), 0)
+        self.bg = UI.createScrollingBackground(ImageManager:get("bg_title"), 0)
         self:createMenu()
 
     end,
@@ -17,16 +15,14 @@ local MenuScreen = BaseScreen:new({
             action = function()
                 ScreenManager:change("intro")
             end
-        }, 
-        {
+        }, {
             name = function()
                 return "Enemy Showcase"
             end,
             action = function()
                 ScreenManager:push("enemy_showcase")
             end
-        }
-        ,{
+        }, {
             name = function()
                 return "Settings"
             end,
@@ -36,7 +32,8 @@ local MenuScreen = BaseScreen:new({
         }}
 
         -- Agregar opción de salida si es una plataforma de escritorio o android
-        if love.system.getOS() == "Windows" or love.system.getOS() == "OS X" or love.system.getOS() == "Linux" or love.system.getOS() == "Android" then
+        if love.system.getOS() == "Windows" or love.system.getOS() == "OS X" or love.system.getOS() == "Linux" or
+            love.system.getOS() == "Android" then
             table.insert(menuItems, {
                 name = function()
                     return "Quit"
@@ -47,7 +44,7 @@ local MenuScreen = BaseScreen:new({
             })
         end
 
-        self.menu = Utils.createMenu(menuItems)
+        self.menu = UI.createMenu(menuItems)
 
     end,
 
@@ -65,7 +62,7 @@ local MenuScreen = BaseScreen:new({
     render = function(self)
         self.bg:render()
         DrawManager:fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT, {
-            color = {0.1, 0.1, 0.1, 0.3}
+            color = "#1A1A1A4D",
         })
 
         self.menu:render(GAME_HEIGHT * 0.6)

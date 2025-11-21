@@ -4,7 +4,7 @@ BaseEntity.__index = BaseEntity
 function BaseEntity:new(p)
     p = p or {}
     local entity = setmetatable({}, BaseEntity)
-    
+
     -- Propiedades base
     entity.type = p.type or "entity"
     entity.x = p.x or 0
@@ -15,51 +15,51 @@ function BaseEntity:new(p)
     entity.vy = p.vy or 0
     entity.friction = p.friction or 1
     entity.speed = p.speed or 1
-    entity.color = p.color or {1, 1, 1}
+    entity.color = p.color or "#FFFFFF"
     entity.dead = p.dead or false
     entity.hp = p.hp or 1
     entity.maxHp = p.maxHp or 1
-    
+
     -- Sistema de eventos
     entity.events = {}
-    
+
     -- Sistema de tareas
     entity.tasks = {}
-    
+
     -- Propiedades adicionales
     for k, v in pairs(p) do
         if entity[k] == nil then
             entity[k] = v
         end
     end
-    
+
     return entity
 end
 
 function BaseEntity:update(dt)
     self:emit("pre-update")
-    
+
     -- Actualizar tareas
     self:updateTasks(dt)
-    
+
     self:emit("post-update")
 end
 
 function BaseEntity:render()
     self:emit("pre-render")
 
-    --renderizar entidad si self.color no es transparente
-    if self.color ~= DrawManager.colors.transparent then
-        DrawManager:fillRect(self.x, self.y, self.width, self.height, {color = self.color})
-    end
-    
+    -- renderizar entidad si self.color no es transparente
+    DrawManager:fillRect(self.x, self.y, self.width, self.height, {
+        color = self.color,
+    })
+
     self:emit("post-render")
 end
 
 function BaseEntity:bounds(options)
     options = options or {}
     local scale = options.scale or 1
-    
+
     return {
         x = self.x - (self.width * (scale - 1)) / 2,
         y = self.y - (self.height * (scale - 1)) / 2,
@@ -98,7 +98,7 @@ function BaseEntity:on(event, callback)
         self.events[event] = {}
     end
     table.insert(self.events[event], callback)
-    
+
     return {
         remove = function()
             for i, cb in ipairs(self.events[event]) do

@@ -82,7 +82,7 @@ local EnemyFireTask = TaskSystem:create({
                 owner = self.entity,
                 width = ENTITY_SIZE * 0.05,
                 height = ENTITY_SIZE * 0.2,
-                color = { 1, 0, 0 },
+                color = "#FF0000",
                 damage = 1,
                 vy = 360
             })
@@ -188,7 +188,7 @@ local BossTask = TaskSystem:create({
                         owner = self.entity,
                         width = ENTITY_SIZE * 0.05,
                         height = ENTITY_SIZE * 0.2,
-                        color = { 1, 0, 0 },
+                        color = "#FF0000",
                         damage = 1,
                         vy = baseBullet.vy
                     })
@@ -207,7 +207,7 @@ local BossTask = TaskSystem:create({
                         owner = self.entity,
                         width = ENTITY_SIZE * 0.05,
                         height = ENTITY_SIZE * 0.2,
-                        color = { 1, 0, 0 },
+                        color = "#FF0000",
                         damage = 1,
                         vy = baseBullet.vy
                     })
@@ -260,7 +260,7 @@ local MotorBurstTask = TaskSystem:create({
                     y = self.entity:bottom() - 10 -- ajustar un poco hacia arriba
                 },
                 options = {
-                    color = { 1, 1, 1, 0.8 }, -- white, normal motor burst
+                    color = "#FFFFFFCC", -- white, normal motor burst
                     size = 2,
                     speed = 30,
                     spread = math.pi,

@@ -5,7 +5,7 @@ local GamePauseScreen = BaseScreen:new({
     
     enter = function(self)
 
-        self.menu = Utils.createMenu({
+        self.menu = UI.createMenu({
             {
                 name = function() return "Resume" end,
                 action = function()

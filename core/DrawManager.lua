@@ -3,47 +3,89 @@ local DrawManager = {}
 function DrawManager:init()
     -- Colores predefinidos
     self.colors = {
-        white = { 1, 1, 1 },
-        black = { 0, 0, 0 },
-        red = { 1, 0, 0 },
-        green = { 0, 1, 0 },
-        blue = { 0, 0, 1 },
-        yellow = { 1, 1, 0 },
-        gray = { 0.5, 0.5, 0.5 },
+        white = { 1, 1, 1, 1 },
+        black = { 0, 0, 0, 1 },
+        red = { 1, 0, 0, 1 },
+        green = { 0, 1, 0, 1 },
+        blue = { 0, 0, 1, 1 },
+        yellow = { 1, 1, 0, 1 },
+        gray = { 0.5, 0.5, 0.5, 1 },
         --more colors can be added here
-        purple = { 0.5, 0, 0.5 },
-        orange = { 1, 0.65, 0 },
-        cyan = { 0, 1, 1 },
-        magenta = { 1, 0, 1 },
+        purple = { 0.5, 0, 0.5, 1 },
+        orange = { 1, 0.65, 0, 1 },
+        cyan = { 0, 1, 1, 1 },
+        magenta = { 1, 0, 1, 1 },
         transparent = { 0, 0, 0, 0 },
     }
+
+    love.graphics.setDefaultFilter("nearest", "nearest")
 end
 
-function DrawManager:setColor(color)
-    if type(color) == "string" then
-        if color:sub(1, 1) == "#" then
-            -- Color hexadecimal
-            local r = tonumber(color:sub(2, 3), 16) / 255
-            local g = tonumber(color:sub(4, 5), 16) / 255
-            local b = tonumber(color:sub(6, 7), 16) / 255
-            local a = 1
-            if #color == 9 then
-                a = tonumber(color:sub(8, 9), 16) / 255
-            end
-            love.graphics.setColor(r, g, b, a)
-            return
+-- Nueva función: parsear cualquier formato de color a tabla RGBA
+function DrawManager:parseColor(color)
+    -- Si ya es una tabla, retornarla (asegurando que tenga 4 componentes)
+    if type(color) == "table" then
+        -- Asegurar que tenga alpha
+        if #color == 3 then
+            return { color[1], color[2], color[3], 1 }
+        elseif #color == 4 then
+            return color
+        else
+            return { 1, 1, 1, 1 } -- Fallback a blanco
         end
-        love.graphics.setColor(self.colors[color] or self.colors.white)
-    elseif type(color) == "table" then
-        love.graphics.setColor(unpack(color))
-    else
-        love.graphics.setColor(color)
     end
+    
+    -- Si es string hexadecimal
+    if type(color) == "string" and color:sub(1, 1) == "#" then
+        local hex = color:sub(2)
+        local r, g, b, a
+        
+        if #hex == 6 then
+            -- Formato #RRGGBB
+            r = tonumber(hex:sub(1, 2), 16) / 255
+            g = tonumber(hex:sub(3, 4), 16) / 255
+            b = tonumber(hex:sub(5, 6), 16) / 255
+            a = 1
+        elseif #hex == 8 then
+            -- Formato #RRGGBBAA
+            r = tonumber(hex:sub(1, 2), 16) / 255
+            g = tonumber(hex:sub(3, 4), 16) / 255
+            b = tonumber(hex:sub(5, 6), 16) / 255
+            a = tonumber(hex:sub(7, 8), 16) / 255
+        else
+            -- Formato inválido, fallback a blanco
+            return { 1, 1, 1, 1 }
+        end
+        
+        return { r, g, b, a }
+    end
+    
+    -- Si es nombre de color predefinido
+    if type(color) == "string" and self.colors[color] then
+        return self.colors[color]
+    end
+    
+    -- Fallback a blanco
+    return { 1, 1, 1, 1 }
 end
+
+-- Función setColor mejorada
+function DrawManager:setColor(color)
+    local parsedColor = self:parseColor(color)
+    love.graphics.setColor(parsedColor)
+end
+
+-- Función para obtener solo el componente alpha de un color
+function DrawManager:getAlpha(color)
+    local parsedColor = self:parseColor(color)
+    return parsedColor[4] or 1
+end
+
+-- Resto de las funciones modificadas para usar parseColor...
 
 function DrawManager:drawLine(x1, y1, x2, y2, options)
     options = options or {}
-    local color = options.color or "white"
+    local color = options.color or "#FFFFFF"
     local width = options.width or 1
 
     self:setColor(color)
@@ -53,7 +95,7 @@ end
 
 function DrawManager:fillRect(x, y, w, h, options)
     options = options or {}
-    local color = options.color or "white"
+    local color = options.color or "#FFFFFF"
     local borderRadius = options.borderRadius or 0
 
     self:setColor(color)
@@ -62,7 +104,7 @@ end
 
 function DrawManager:strokeRect(x, y, w, h, options)
     options = options or {}
-    local color = options.color or "white"
+    local color = options.color or "#FFFFFF"
     local lineWidth = options.lineWidth or 1
     local borderRadius = options.borderRadius or 0
 
@@ -73,20 +115,14 @@ end
 
 function DrawManager:fillText(text, x, y, options)
     options = options or {}
-    local color = options.color or "white"
+    local color = options.color or "#FFFFFF"
     local size = options.size or 24
     local align = options.align or "left"
     local baseline = options.baseline or "top"
     local shadow = options.shadow ~= false
 
     -- Crear fuente con alta calidad
-    -- local font = love.graphics.newFont("assets/fonts/slkscr.ttf",size)
-    -- local font = love.graphics.newFont("assets/fonts/sprint-2.otf",size)
-    -- local font = love.graphics.newFont("assets/fonts/BoldPixels.ttf",size)
-    -- local font = love.graphics.newFont("assets/fonts/PressStart2P-Regular.ttf",size)
-    -- local font = love.graphics.newFont("assets/fonts/GNF.ttf", size)
     local font = love.graphics.newFont("assets/fonts/Nihonium113-Console.ttf", size)
-    -- local font = love.graphics.newFont(size)
     font:setFilter("linear", "linear", 4)
     love.graphics.setFont(font)
 
@@ -115,23 +151,10 @@ function DrawManager:fillText(text, x, y, options)
         drawY = y - (textHeight - descent)
     end
 
-    -- Extraer alpha del color principal
-    local mainAlpha = 1
-    local shadowAlpha = 1
-
-    -- Si el color tiene alpha, extraerlo
-    if type(color) == "table" and #color >= 4 then
-        mainAlpha = color[4] or 1
-    elseif type(color) == "string" and color:sub(1, 5) == "rgba(" then
-        -- Parsear rgba string si es necesario
-        local r, g, b, a = color:match("rgba%((%d+),(%d+),(%d+),(%d+.?%d*)%)")
-        if a then
-            mainAlpha = tonumber(a) or 0
-        end
-    end
-
-    -- Calcular alpha del shadow (usar el mismo alpha que el texto principal)
-    shadowAlpha = mainAlpha
+    -- ✅ NUEVO: Usar parseColor para obtener alpha correctamente
+    local parsedColor = self:parseColor(color)
+    local mainAlpha = parsedColor[4] or 1
+    local shadowAlpha = mainAlpha  -- Mismo alpha para la sombra
 
     -- Dibujar sombra (si está habilitada y tiene alpha > 0)
     if shadow and shadowAlpha > 0 then
@@ -141,14 +164,15 @@ function DrawManager:fillText(text, x, y, options)
 
     -- Dibujar texto principal (solo si tiene alpha > 0)
     if mainAlpha > 0 then
-        self:setColor(color) -- Esto manejará el alpha del color principal
+        self:setColor(parsedColor) -- Usar el color ya parseado
         love.graphics.print(text, drawX, drawY)
     end
 end
 
 function DrawManager:fillCircle(x, y, radius, options)
     options = options or {}
-    local color = options.color or "white"
+    local color = options.color or "#FFFFFF"
+    local alpha = options.alpha or 1
 
     self:setColor(color)
     love.graphics.circle("fill", x, y, radius)
@@ -159,7 +183,11 @@ function DrawManager:drawImage(img, dst, src, options)
     local rotate = options.rotate or 0
     local pulse = options.pulse or nil
     local alpha = options.alpha or 1
-    local color = options.color or { 1, 1, 1 } -- Color por defecto: blanco
+    local color = options.color or "#FFFFFF" -- Color por defecto: blanco con alpha
+
+    -- ✅ NUEVO: Parsear el color y combinar con el alpha específico
+    local parsedColor = self:parseColor(color)
+    local finalAlpha = (parsedColor[4] or 1) * alpha  -- Combinar alpha del color con alpha de opciones
 
     -- Calcular dimensiones y escala base
     local imgWidth, imgHeight = img:getDimensions()
@@ -181,7 +209,8 @@ function DrawManager:drawImage(img, dst, src, options)
         pulseScaleY = scaleY * scaleFactor
     end
 
-    love.graphics.setColor(color[1], color[2], color[3], alpha) -- Establecer color blanco con alpha
+    -- ✅ NUEVO: Usar el color parseado con el alpha combinado
+    love.graphics.setColor(parsedColor[1], parsedColor[2], parsedColor[3], finalAlpha)
 
     -- Dibujar la imagen con todas las transformaciones y alpha
     if src and src.x then

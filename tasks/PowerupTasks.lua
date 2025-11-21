@@ -10,16 +10,19 @@ local ShieldPowerupTask = TaskSystem:create({
         self.entity = entity
         AudioManager:play("shield")
 
+        local color = "#005ECC"
+        local parsedColor = DrawManager:parseColor(color)
+
         self.renderListener = self.entity:on("pre-render", function()
             local pos = self.entity:center()
-            -- DrawManager:fillCircle(pos.x, pos.y, self.entity.width * 1.5, { color = { 0, 0.57, 1, 0.07 } })
             for i = 1, 3 do
                 local radius = 100 - (i * 20)
                 --dark blue glow
-                love.graphics.setColor(0, 0.37, 0.8, i / 10)
-                love.graphics.circle("fill", pos.x, pos.y, radius)
+                DrawManager:fillCircle(pos.x, pos.y, radius, {
+                    color = {parsedColor[1], parsedColor[2], parsedColor[3], i / 10},
+                })
             end
-            love.graphics.setColor(1, 1, 1, 1)
+            
         end)
 
         self.damageListener = self.entity:on("damage-received", function(data)
@@ -108,7 +111,7 @@ local FastSpeedPowerupTask = TaskSystem:create({
                     y = self.entity:bottom() - 10 -- ajustar un poco hacia arriba
                 },
                 options = {
-                    color = { 0, 0.5, 1, 0.8 }, -- blue
+                    color = "#0080FFCC", -- blue
                     size = 2,
                     speed = 30,
                     spread = math.pi,
@@ -166,7 +169,7 @@ local LifeDrainPowerupTask = TaskSystem:create({
                     y = self.entity.y - 5 -- ajustar un poco hacia arriba
                 },
                 options = {
-                    color = { 0.5, 0, 0.5, 0.8 }, -- purple
+                    color = "#800080CC", -- purple
                     size = 2,
                     speed = 30,
                     spread = math.pi,
@@ -222,7 +225,7 @@ local FreezedTask = TaskSystem:create({
 
         self.renderListener = self.entity:on("pre-render", function()
             local pos = self.entity:center()
-            DrawManager:fillCircle(pos.x, pos.y, self.entity.width, { color = { 0.43, 0.75, 0.99, 0.07 } })
+            DrawManager:fillCircle(pos.x, pos.y, self.entity.width, { color = "#6FC0FD12" }) -- light blue with transparency
         end)
     end,
 

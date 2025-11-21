@@ -30,15 +30,15 @@ local GameEndScreen = BaseScreen:new({
         DrawManager:fillText("Congratulations! You completed the game!", GAME_WIDTH * 0.5, GAME_HEIGHT * 0.4, {
             size = 30,
             align = "center",
-            color = "yellow"
+            color = "#00FFFF"
         })
         DrawManager:fillText("Total Score: " .. self.score, GAME_WIDTH * 0.5, GAME_HEIGHT * 0.5, {
             align = "center",
-            color = "white"
+            color = "#FFFFFF"
         })
         DrawManager:fillText("Back to Menu (Escape or Button B)", GAME_WIDTH * 0.5, GAME_HEIGHT - 100, {
             align = "center",
-            color = "white"
+            color = "#FFFFFF"
         })
     end
 })

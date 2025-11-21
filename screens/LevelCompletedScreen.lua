@@ -6,7 +6,7 @@ local LevelCompletedScreen = BaseScreen:new({
     enter = function(self, data)
         self.score = data.score
         self.level = data.level
-        self.bg = Utils.createScrollingBackground(ImageManager:get("bg_intro"), 0)
+        self.bg = UI.createScrollingBackground(ImageManager:get("bg_intro"), 0)
     end,
     
     input = function(self, eventType, key)
@@ -28,7 +28,7 @@ local LevelCompletedScreen = BaseScreen:new({
         
         self.bg:render()
 
-        DrawManager:fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT, {color = {0, 0, 0, 0.5}})
+        DrawManager:fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT, {color = "#00000088"})
         
         DrawManager:fillText("Level " .. self.level.id .. " Completed!", GAME_WIDTH * 0.5, GAME_HEIGHT * 0.4, 
                            {size = 30, align = "center"})
