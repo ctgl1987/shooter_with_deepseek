@@ -1,5 +1,3 @@
-local TaskSystem = require("core.TaskSystem")
-
 -- Shield Powerup
 local ShieldPowerupTask = TaskSystem:create({
     name = "Shield",

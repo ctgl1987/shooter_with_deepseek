@@ -1,5 +1,3 @@
-local TaskSystem = require("core.TaskSystem")
-
 local EntityMoveTask = TaskSystem:create({
     name = "EntityMoveTask",
     duration = math.huge,

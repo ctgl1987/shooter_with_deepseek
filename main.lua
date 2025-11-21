@@ -17,11 +17,13 @@ local shaderEnabled = true
 function love.load()
     math.randomseed(os.time())
 
-    Utils = require("core.Utils")
-    
+    Utils = require("src.core.Utils")
+        
+    Json = require("lib.json")
+    Lume = require("lib.lume")    
 
-    require("data.Texts") -- Cargar textos del juego
-    require("data.Assets")
+    require("src.data.Texts") -- Cargar textos del juego
+    require("src.data.Assets")
 
     print("")
     print("*****************************")
@@ -29,19 +31,15 @@ function love.load()
     print("*****************************")
 
     
-    Json = require("lib.json")
-    Lume = require("lib.lume")
-
-    
     -- Cargar módulos core y asignarlos a variables globales
-    DrawManager = require("core.DrawManager")
-    KeyManager = require("core.KeyManager")
-    AudioManager = require("core.AudioManager")
-    ImageManager = require("core.ImageManager")
-    InputManager = require("core.InputManager")
-    ScreenManager = require("core.ScreenManager")
+    DrawManager = require("src.core.DrawManager")
+    KeyManager = require("src.core.KeyManager")
+    AudioManager = require("src.core.AudioManager")
+    ImageManager = require("src.core.ImageManager")
+    InputManager = require("src.core.InputManager")
+    ScreenManager = require("src.core.ScreenManager")
 
-    UI = require("core.UI")
+    UI = require("src.core.UI")
     
     CurrenttGamepad = nil
     
@@ -68,36 +66,36 @@ function love.load()
 
 
 
-    BaseEntity = require("core.BaseEntity")
-    BaseScreen = require("core.BaseScreen")
-    TaskSystem = require("core.TaskSystem")
-    CheatManager = require("core.CheatManager")
-    Sprite = require("core.Sprite")
+    BaseEntity = require("src.core.BaseEntity")
+    BaseScreen = require("src.core.BaseScreen")
+    TaskSystem = require("src.core.TaskSystem")
+    CheatManager = require("src.core.CheatManager")
+    Sprite = require("src.core.Sprite")
 
     -- Cargar tasks
-    PowerupTasks = require("tasks.PowerupTasks")
-    EntityTasks = require("tasks.EntityTasks")
+    PowerupTasks = require("src.tasks.PowerupTasks")
+    EntityTasks = require("src.tasks.EntityTasks")
 
     -- Cargar datos del juego
-    Levels = require("data.Levels")
-    EnemyTypes = require("data.EnemyTypes")
-    ItemTypes = require("data.ItemTypes")
+    Levels = require("src.data.Levels")
+    EnemyTypes = require("src.data.EnemyTypes")
+    ItemTypes = require("src.data.ItemTypes")
 
     -- Cargar pantallas
-    StartScreen = require("screens.StartScreen")
-    MenuScreen = require("screens.MenuScreen")
-    IntroScreen = require("screens.IntroScreen")
-    GameScreen = require("screens.GameScreen")
+    StartScreen = require("src.screens.StartScreen")
+    MenuScreen = require("src.screens.MenuScreen")
+    IntroScreen = require("src.screens.IntroScreen")
+    GameScreen = require("src.screens.GameScreen")
 
-    GameOverScreen = require("screens.GameOverScreen")
-    GameEndScreen = require("screens.GameEndScreen")
-    SettingScreen = require("screens.SettingScreen")
-    EnemyShowcaseScreen = require("screens.EnemyShowcaseScreen")
+    GameOverScreen = require("src.screens.GameOverScreen")
+    GameEndScreen = require("src.screens.GameEndScreen")
+    SettingScreen = require("src.screens.SettingScreen")
+    EnemyShowcaseScreen = require("src.screens.EnemyShowcaseScreen")
 
-    LevelSelectScreen = require("screens.LevelSelectScreen")
-    GamePlayScreen = require("screens.GamePlayScreen")
-    GamePauseScreen = require("screens.GamePauseScreen")
-    LevelCompletedScreen = require("screens.LevelCompletedScreen")
+    LevelSelectScreen = require("src.screens.LevelSelectScreen")
+    GamePlayScreen = require("src.screens.GamePlayScreen")
+    GamePauseScreen = require("src.screens.GamePauseScreen")
+    LevelCompletedScreen = require("src.screens.LevelCompletedScreen")
 
     -- Inicializar managers
     DrawManager:init()
