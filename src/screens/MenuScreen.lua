@@ -2,7 +2,7 @@ local MenuScreen = BaseScreen:new({
     name = "menu",
 
     enter = function(self)
-        self.bg = UI.createScrollingBackground(ImageManager:get("bg_title"), 0)
+        self.bg = UI.createScrollingBackground(ImageManager:get("bg_title"))
         self:createMenu()
 
     end,

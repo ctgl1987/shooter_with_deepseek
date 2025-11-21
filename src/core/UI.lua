@@ -1,10 +1,25 @@
 local UI = {}
 
 -- Crear fondo con desplazamiento
-function UI.createScrollingBackground(image, speed)
+function UI.createScrollingBackground(image, options)
+    options = options or {}
+    local speed = options.speed or 0
+    local alpha = options.alpha or 1
+
+    local width = 0
+    local height = 0
+
+    if image:getWidth() < GAME_WIDTH then
+        width = GAME_WIDTH
+        height = (image:getHeight() / image:getWidth()) * GAME_WIDTH
+    else
+        width = image:getWidth()
+        height = image:getHeight()
+    end
+
     local bg = BaseEntity:new({
-        width = GAME_WIDTH,
-        height = (image:getHeight() / image:getWidth()) * GAME_WIDTH,
+        width = width,
+        height = height,
         image = image,
         vy = speed
     })
@@ -24,6 +39,8 @@ function UI.createScrollingBackground(image, speed)
             y = bg.y - bg.height,
             width = bg.width,
             height = bg.height
+        }, nil, {
+            alpha = alpha
         })
         -- Parte central
         DrawManager:drawImage(bg.image, {
@@ -31,6 +48,8 @@ function UI.createScrollingBackground(image, speed)
             y = bg.y,
             width = bg.width,
             height = bg.height
+        }, nil, {
+            alpha = alpha
         })
         -- Parte inferior
         DrawManager:drawImage(bg.image, {
@@ -38,6 +57,8 @@ function UI.createScrollingBackground(image, speed)
             y = bg.y + bg.height,
             width = bg.width,
             height = bg.height
+        }, nil, {
+            alpha = alpha
         })
     end)
 

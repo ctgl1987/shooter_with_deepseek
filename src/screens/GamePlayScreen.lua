@@ -147,12 +147,9 @@ local GamePlayScreen = BaseScreen:new({
 
     createBackground = function(self)
         local bgImage = ImageManager:get(self.level.bg_image or "bg_space")
-        self.bg = UI.createScrollingBackground(bgImage, self.level.bg_speed)
-
-        if self.level.overlay_image then
-            local overlayImage = ImageManager:get(self.level.overlay_image)
-            self.bgOverlay = UI.createScrollingBackground(overlayImage, self.level.overlay_speed)
-        end
+        self.bg = UI.createScrollingBackground(bgImage, {
+            speed = self.level.bg_speed
+        })
     end,
 
     setupCheats = function(self)
@@ -795,7 +792,7 @@ local GamePlayScreen = BaseScreen:new({
             end
         end
 
-        if self.completed and self.player:bottom() < -50 then
+        if self.completed and self.player:bottom() < -300 then
             self:changeLevel()
             return
         end
@@ -816,10 +813,6 @@ local GamePlayScreen = BaseScreen:new({
             self:handleLevelCompletion()
         end
         self:handleGameplay(dt)
-
-        if self.bgOverlay then
-            self.bgOverlay:update(dt)
-        end
 
         self:checkLevelComplete()
     end,
@@ -1085,10 +1078,6 @@ local GamePlayScreen = BaseScreen:new({
 
         for _, bullet in ipairs(self.enemiesBullets) do
             bullet:render()
-        end
-
-        if self.bgOverlay then
-            self.bgOverlay:render()
         end
 
         if ShakeDuration > 0 then

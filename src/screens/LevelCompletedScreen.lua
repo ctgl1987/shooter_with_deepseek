@@ -6,7 +6,7 @@ local LevelCompletedScreen = BaseScreen:new({
     enter = function(self, data)
         self.score = data.score
         self.level = data.level
-        self.bg = UI.createScrollingBackground(ImageManager:get("bg_intro"), 0)
+        self.bg = UI.createScrollingBackground(ImageManager:get("bg_intro"))
     end,
     
     input = function(self, eventType, key)

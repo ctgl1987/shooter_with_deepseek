@@ -4,7 +4,7 @@ local LevelSelectScreen = BaseScreen:new({
     name = "game_level_select",
 
     enter = function(self, data)
-        self.bg = UI.createScrollingBackground(ImageManager:get("bg_intro"), 0)
+        self.bg = UI.createScrollingBackground(ImageManager:get("bg_intro"))
         self.levels = {}
 
         for i, level in ipairs(Levels.list) do

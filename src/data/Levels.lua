@@ -16,8 +16,7 @@ function CreateLevel(id, props)
         lastLevel = props.lastLevel or false,
         bg_image = props.bg_image or nil,
         bg_speed = props.bg_speed or 60,
-        overlay_image = props.overlay_image or nil,
-        overlay_speed = props.overlay_speed or 0,
+        
         endMessages = props.endMessages or { "Level Completed!" },
         tint = props.tint or nil,
     }

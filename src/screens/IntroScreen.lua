@@ -6,7 +6,7 @@ local IntroScreen = BaseScreen:new({
     enter = function(self)
         self.currentLine = 0
         self.counter = 0
-        self.bg = UI.createScrollingBackground(ImageManager:get("bg_intro"), 0)
+        self.bg = UI.createScrollingBackground(ImageManager:get("bg_intro"))
 
         self.briefText = GAME_BRIEF
     end,

@@ -137,6 +137,9 @@ local bgImages = { {
     name = 'bg_lunar_base',
     src = 'assets/images/bg/bg_lunar_base.png'
 }, {
+    name = 'bg_fog',
+    src = 'assets/images/bg/bg_fog.png'
+}, {
     name = 'bg_stars_green',
     src = 'assets/images/bg/bg_stars_green.png'
 } }

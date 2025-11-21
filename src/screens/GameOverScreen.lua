@@ -6,7 +6,7 @@ local GameOverScreen = BaseScreen:new({
         for _, level in pairs(GameState.levelsCompleted) do
             self.score = self.score + (level.score or 0)
         end
-        self.bg = UI.createScrollingBackground(ImageManager:get("bg_intro"), 0)
+        self.bg = UI.createScrollingBackground(ImageManager:get("bg_intro"))
     end,
 
     input = function(self, eventType, key)
