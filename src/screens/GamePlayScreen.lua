@@ -147,7 +147,12 @@ local GamePlayScreen = BaseScreen:new({
 
     createBackground = function(self)
         local bgImage = ImageManager:get(self.level.bg_image or "bg_space")
-        self.bg = UI.createScrollingBackground(bgImage, 60)
+        self.bg = UI.createScrollingBackground(bgImage, self.level.bg_speed)
+
+        if self.level.overlay_image then
+            local overlayImage = ImageManager:get(self.level.overlay_image)
+            self.bgOverlay = UI.createScrollingBackground(overlayImage, self.level.overlay_speed)
+        end
     end,
 
     setupCheats = function(self)
@@ -737,12 +742,14 @@ local GamePlayScreen = BaseScreen:new({
         if eventType == "keydown" then
             if key == "pause" then
                 GameScreenManager:push("game_pause")
-            elseif key == "fire" then
+            end
+            if key == "fire" then
                 -- Saltar intro solo si introTimer está activo y le queda mas de 60 frames
                 if self.introTimer.value < self.introTimer.limit and self.introTimer.value + 60 < self.introTimer.limit then
                     self.introTimer.value = self.introTimer.limit - 60
                 end
-            elseif key == "bomb" then
+            end
+            if key == "bomb" then
                 if self.player.bombs > 0 then
                     self.player.bombs = self.player.bombs - 1
                     -- Activar bomba - destruir todos los enemigos
@@ -755,6 +762,11 @@ local GamePlayScreen = BaseScreen:new({
                     -- shake screen
                     ShakeDuration = 30
                 end
+            end
+
+            if key == "debug" then
+                -- Debug.show = not Debug.show
+                self:levelCompleted()
             end
 
             -- print("GamePlayScreen received key: " .. tostring(realKey))
@@ -804,6 +816,10 @@ local GamePlayScreen = BaseScreen:new({
             self:handleLevelCompletion()
         end
         self:handleGameplay(dt)
+
+        if self.bgOverlay then
+            self.bgOverlay:update(dt)
+        end
 
         self:checkLevelComplete()
     end,
@@ -1069,6 +1085,10 @@ local GamePlayScreen = BaseScreen:new({
 
         for _, bullet in ipairs(self.enemiesBullets) do
             bullet:render()
+        end
+
+        if self.bgOverlay then
+            self.bgOverlay:render()
         end
 
         if ShakeDuration > 0 then

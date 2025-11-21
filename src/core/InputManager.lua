@@ -9,7 +9,8 @@ InputManager.bindings = {
         left = { "left", "a", "button_dpleft" },
         right = { "right", "d", "button_dpright" },
         select = { "return", "space", "button_a", "button_start" },
-        back = { "escape", "button_b" }
+        back = { "escape", "button_b" },
+        debug = { "k" },
     },
     pause = {
         up = { "up", "w", "button_dpup" },
@@ -17,7 +18,8 @@ InputManager.bindings = {
         left = { "left", "a", "button_dpleft" },
         right = { "right", "d", "button_dpright" },
         select = { "return", "space", "button_a" },
-        back = { "escape", "button_b", "button_start" }
+        back = { "escape", "button_b", "button_start" },
+        debug = { "k" },
     },
     game = {
         up = { "up", "w", "button_dpup" },
@@ -26,7 +28,8 @@ InputManager.bindings = {
         right = { "right", "d", "button_dpright" },
         fire = { "space", "button_a" },
         bomb = { "b", "button_b" },
-        pause = { "escape", "button_start" }
+        pause = { "escape", "button_start" },
+        debug = { "k" },
     }
 }
 

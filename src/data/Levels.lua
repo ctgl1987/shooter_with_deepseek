@@ -15,6 +15,9 @@ function CreateLevel(id, props)
         itemDropRate = props.itemDropRate or 0.3,
         lastLevel = props.lastLevel or false,
         bg_image = props.bg_image or nil,
+        bg_speed = props.bg_speed or 60,
+        overlay_image = props.overlay_image or nil,
+        overlay_speed = props.overlay_speed or 0,
         endMessages = props.endMessages or { "Level Completed!" },
         tint = props.tint or nil,
     }
@@ -57,6 +60,7 @@ Levels.list = {
         objective = "elimination",
         enemiesToEliminate = 30,
         bg_image = "bg_stars_purple",
+        bg_speed = 120,
         endMessages = {
             "Mars orbit reached.",
             "Prepare for next wave."
@@ -77,8 +81,9 @@ Levels.list = {
         spawnRate = 70,
         maxEnemiesOnScreen = 5,
         objective = "survival",
-        timeLimit = 120 * 60,
+        timeLimit  = 120 * 60,
         bg_image = "bg_stars_orange",
+        bg_speed = 120,
         endMessages = {
             "Transports have cleared Mars orbit.",
             "Heading back to Earth."
@@ -103,6 +108,7 @@ Levels.list = {
         dataToCollect = 8,
         itemDropRate = 0.7,
         bg_image = "bg_stars_green",
+        bg_speed = 90,
         endMessages = {
             "Data successfully recovered!",
             "Alien encryption protocols acquired.",
@@ -126,6 +132,7 @@ Levels.list = {
         objective = "elimination",
         enemiesToEliminate = 40,
         bg_image = "bg_stars_blue",
+        bg_speed = 120,
         endMessages = {
             "Orbital defenses holding.",
             "Preparing for final engagement at Lunar Base."
@@ -149,6 +156,7 @@ Levels.list = {
         objective = "elimination",
         enemiesToEliminate = 50,
         bg_image = "bg_lunar_base",
+        bg_speed = 90,
         endMessages = {
             "Lunar Base secured.",
             "All systems point to Hive Queen location.",
@@ -170,6 +178,7 @@ Levels.list = {
         objective = "elimination",
         enemiesToEliminate = 1,
         bg_image = "bg_ion",
+        bg_speed = 30,
         lastLevel = true,
         endMessages = {
             "Hive Queen destroyed.",
