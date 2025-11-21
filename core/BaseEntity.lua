@@ -47,7 +47,12 @@ end
 
 function BaseEntity:render()
     self:emit("pre-render")
-    DrawManager:fillRect(self.x, self.y, self.width, self.height, {color = self.color})
+
+    --renderizar entidad si self.color no es transparente
+    if self.color ~= DrawManager.colors.transparent then
+        DrawManager:fillRect(self.x, self.y, self.width, self.height, {color = self.color})
+    end
+    
     self:emit("post-render")
 end
 

@@ -73,7 +73,6 @@ local EnemyFireTask = TaskSystem:create({
             self.fireTimer.value = 0
 
             local chance = self.fireTimer.randomChance and math.random() or 0
-            print("Enemy firing? " .. chance .. " <= " .. self.chanceLimit)
             if chance > self.chanceLimit then
                 return
             end

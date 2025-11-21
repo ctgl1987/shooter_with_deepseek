@@ -55,4 +55,13 @@ function InputManager:getActionForKey(key)
     return nil
 end
 
+function InputManager:getMousePosition()
+    --mouse position scaled with GAME_WIDTH and GAME_HEIGHT
+    local screenWidth, screenHeight = love.graphics.getDimensions()
+    return {
+        x = love.mouse.getX() * (GAME_WIDTH / screenWidth),
+        y = love.mouse.getY() * (GAME_HEIGHT / screenHeight),
+    }
+end
+
 return InputManager

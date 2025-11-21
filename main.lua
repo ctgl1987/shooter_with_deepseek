@@ -267,7 +267,7 @@ function LoadGame()
     print("> Save file found. Loading...")
 
     local data = love.filesystem.read("savegame.json")
-    print(success, gameState)
+    local success, gameState = pcall(Json.decode, data)
     if success and gameState then
         print("> Game loaded successfully.")
         GameState = gameState

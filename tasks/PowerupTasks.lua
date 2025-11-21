@@ -47,6 +47,7 @@ local TripleShotPowerupTask = TaskSystem:create({
 
             -- Bala izquierda
             local leftBullet = BaseEntity:new({
+                world = baseBullet.world,
                 type = "bullet",
                 owner = self.entity,
                 width = ENTITY_SIZE * 0.05,
@@ -64,6 +65,7 @@ local TripleShotPowerupTask = TaskSystem:create({
 
             -- Bala derecha
             local rightBullet = BaseEntity:new({
+                world = baseBullet.world,
                 type = "bullet",
                 owner = self.entity,
                 width = ENTITY_SIZE * 0.05,

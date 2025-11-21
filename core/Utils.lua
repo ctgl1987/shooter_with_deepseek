@@ -154,9 +154,11 @@ function Utils.createMenu(items)
             end
         end,
         render = function(self, y)
+
             local startY = y - ((#self.items - 1) * 30) * 0.5
             for i, item in ipairs(self.items) do
                 local color = (i == self.index) and "yellow" or "white"
+
                 DrawManager:fillText(item.name(), GAME_WIDTH * 0.5, startY + (i * 40), {
                     size = 30,
                     color = color,
@@ -270,6 +272,41 @@ function Utils.deepCopy(original)
         end
     end
     return copy
+end
+
+function Utils.button(props)
+    local x = props.x or 0
+    local y = props.y or 0
+    local width = props.width or 100
+    local height = props.height or 50
+    local text = props.text or "Button"
+    local onClick = props.onClick or function() end
+
+    local button = {
+        x = x,
+        y = y,
+        width = width,
+        height = height,
+        text = text,
+        onClick = onClick,
+        render = function(self)
+            DrawManager:fillRect(self.x, self.y, self.width, self.height, {color = "blue"})
+            DrawManager:fillText(self.text, self.x + self.width / 2, self.y + self.height / 2, {
+                size = 20,
+                color = "white",
+                align = "center",
+                valign = "middle"
+            })
+        end,
+        checkPressed = function(self, mouseX, mouseY)
+            if mouseX >= self.x and mouseX <= self.x + self.width and
+               mouseY >= self.y and mouseY <= self.y + self.height then
+                self.onClick()
+            end
+        end
+    }
+
+    return button
 end
 
 return Utils

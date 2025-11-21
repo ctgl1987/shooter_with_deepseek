@@ -46,6 +46,7 @@ local GamePlayScreen = BaseScreen:new({
 
     createPlayer = function(self)
         self.player = BaseEntity:new({
+            world = self,
             type = "player",
             x = (GAME_WIDTH - ENTITY_SIZE) / 2,
             y = GAME_HEIGHT - ENTITY_SIZE * 1.5,
@@ -139,7 +140,7 @@ local GamePlayScreen = BaseScreen:new({
             self.player.sprite:render(self.player:bounds(), options);
         end)
 
-        self.player:on('spawn-particles', function(data)
+        self.player:on("spawn-particles", function(data)
             self:spawnParticles(data.position or self.player:center(), data.options)
         end)
     end,
@@ -198,7 +199,6 @@ local GamePlayScreen = BaseScreen:new({
             print("Heal Me Activated!")
             -- self.player.hp = self.player.maxHp
             self.player:emit("hp-restored", { amount = self.player.maxHp })
-            self:showText("Healed to Full HP", 120)
         end)
 
         CheatManager:register("weak", function(cheat)
@@ -212,6 +212,7 @@ local GamePlayScreen = BaseScreen:new({
         if self.completed then
             return
         end
+        self.enemySpawnTimer.value = self.enemySpawnTimer.value + 1
         if self.enemySpawnTimer.value < self.enemySpawnTimer.limit then
             return
         end
@@ -225,6 +226,7 @@ local GamePlayScreen = BaseScreen:new({
         local template = EnemyTypes[enemyType]
 
         local enemy = BaseEntity:new({
+            world = self,
             type = "enemy",
             x = math.random(10, GAME_WIDTH - ENTITY_SIZE - 10),
             y = -ENTITY_SIZE,
@@ -306,9 +308,19 @@ local GamePlayScreen = BaseScreen:new({
 
         enemy:on("damage-received", function(damageEvent)
             self:spawnParticles(damageEvent.source:center())
+
+            enemy.hp = enemy.hp - damageEvent.damage
+
+            if enemy.hp <= 0 then
+                
+                enemy:emit("enemy-destroyed")
+                enemy.dead = true
+            end
         end)
 
         enemy:on("enemy-destroyed", function()
+            AudioManager:play("explosion")
+
             if self.level.objective == "elimination" then
                 self.level.enemiesToEliminate = math.max(0, self.level.enemiesToEliminate - 1)
             end
@@ -329,6 +341,7 @@ local GamePlayScreen = BaseScreen:new({
         self.player.weapon:reload()
 
         local bullet = BaseEntity:new({
+            world = self,
             type = "bullet",
             owner = self.player,
             width = ENTITY_SIZE * 0.05,
@@ -364,6 +377,7 @@ local GamePlayScreen = BaseScreen:new({
         local template = specificItem or Utils.randomItem(Utils.values(ItemTypes))
 
         local item = BaseEntity:new({
+            world = self,
             width = ENTITY_SIZE * 0.75,
             height = ENTITY_SIZE * 0.75,
             vy = 120,
@@ -414,6 +428,7 @@ local GamePlayScreen = BaseScreen:new({
 
     showText = function(self, text, ttl)
         local textEntity = BaseEntity:new({
+            world = self,
             text = text,
             ttl = ttl,
             x = GAME_WIDTH / 2,
@@ -451,6 +466,7 @@ local GamePlayScreen = BaseScreen:new({
 
         for i = 1, count do
             local particle = BaseEntity:new({
+                world = self,
                 x = position.x + Utils.randomInt(-spread / 2, spread / 2),
                 y = position.y + Utils.randomInt(-spread / 2, spread / 2),
                 width = size,
@@ -582,7 +598,6 @@ local GamePlayScreen = BaseScreen:new({
             self:playerFire()
         end
 
-        self.enemySpawnTimer.value = self.enemySpawnTimer.value + 1
         self:spawnEnemy()
 
         -- Actualizar enemigos
@@ -632,6 +647,7 @@ local GamePlayScreen = BaseScreen:new({
         -- Actualizar balas del jugador
         for i = #self.playerBullets, 1, -1 do
             local bullet = self.playerBullets[i]
+
             bullet:update(dt)
 
             if bullet.y < 0 then
@@ -639,29 +655,35 @@ local GamePlayScreen = BaseScreen:new({
             end
 
             -- Colisión con enemigos
-            for j, enemy in ipairs(self.enemies) do
-                if Utils.collision(bullet, enemy) then
-                    bullet.dead = true
+            for j = #self.enemies, 1, -1 do
+                local enemy = self.enemies[j]
+
+                if not bullet.dead and Utils.collision(bullet, enemy) then
+
+                    -- notificar impacto
                     bullet:emit("bullet-hit", {
                         damage = bullet.damage,
                         target = enemy
                     })
-                    enemy.hp = enemy.hp - bullet.damage
+
+                    bullet.dead = true
+                    
+                    --notificar damage
                     enemy:emit("damage-received", {
                         damage = bullet.damage,
                         source = bullet
                     })
 
-                    if enemy.hp <= 0 then
-                        AudioManager:play("explosion")
-                        enemy:emit("enemy-destroyed")
-                        enemy.dead = true
-
-                        -- Spawnear ítem
+                    --spawn item if enemy is dead
+                    if enemy.dead then
                         local chance = math.random()
+
                         if chance < self.level.itemDropRate then
                             self:spawnItem(enemy:center())
                         end
+
+                        -- eliminacion INMEDIATA (DeepSeek)
+                        table.remove(self.enemies, j)
                     end
                     break
                 end
@@ -681,7 +703,7 @@ local GamePlayScreen = BaseScreen:new({
                 bullet.dead = true
             end
 
-            if Utils.collision(bullet, self.player) then
+            if not bullet.dead and Utils.collision(bullet, self.player) then
                 bullet.dead = true
                 local damageEvent = {
                     damage = bullet.damage,
@@ -1041,8 +1063,6 @@ local GamePlayScreen = BaseScreen:new({
             })
         end
 
-
-
         -- Renderizar entidades
         for _, enemy in ipairs(self.enemies) do
             enemy:render()
@@ -1066,8 +1086,6 @@ local GamePlayScreen = BaseScreen:new({
         for _, bullet in ipairs(self.enemiesBullets) do
             bullet:render()
         end
-
-
 
         if ShakeDuration > 0 then
             love.graphics.pop()

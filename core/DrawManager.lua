@@ -14,7 +14,8 @@ function DrawManager:init()
         purple = { 0.5, 0, 0.5 },
         orange = { 1, 0.65, 0 },
         cyan = { 0, 1, 1 },
-        magenta = { 1, 0, 1 }
+        magenta = { 1, 0, 1 },
+        transparent = { 0, 0, 0, 0 },
     }
 end
 
