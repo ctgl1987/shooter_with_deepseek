@@ -14,7 +14,7 @@ function CreateLevel(id, props)
         dataToCollect = props.dataToCollect or 0,
         itemDropRate = props.itemDropRate or 0.3,
         lastLevel = props.lastLevel or false,
-        image_name = props.image_name or nil,
+        bg_image = props.bg_image or nil,
         endMessages = props.endMessages or { "Level Completed!" },
         tint = props.tint or nil,
     }
@@ -35,7 +35,7 @@ Levels.list = {
         maxEnemiesOnScreen = 3,
         objective = "elimination",
         enemiesToEliminate = 3,
-        image_name = "bg_asteroids",
+        bg_image = "bg_asteroids",
         endMessages = {
             "Initial contact made.",
             "Prepare for escalating hostilities."
@@ -56,7 +56,7 @@ Levels.list = {
         maxEnemiesOnScreen = 4,
         objective = "elimination",
         enemiesToEliminate = 30,
-        image_name = "bg_stars_purple",
+        bg_image = "bg_stars_purple",
         endMessages = {
             "Mars orbit reached.",
             "Prepare for next wave."
@@ -78,7 +78,7 @@ Levels.list = {
         maxEnemiesOnScreen = 5,
         objective = "survival",
         timeLimit = 120 * 60,
-        image_name = "bg_stars_orange",
+        bg_image = "bg_stars_orange",
         endMessages = {
             "Transports have cleared Mars orbit.",
             "Heading back to Earth."
@@ -102,7 +102,7 @@ Levels.list = {
         objective = "collectData",
         dataToCollect = 8,
         itemDropRate = 0.7,
-        image_name = "bg_stars_green",
+        bg_image = "bg_stars_green",
         endMessages = {
             "Data successfully recovered!",
             "Alien encryption protocols acquired.",
@@ -125,7 +125,7 @@ Levels.list = {
         maxEnemiesOnScreen = 6,
         objective = "elimination",
         enemiesToEliminate = 40,
-        image_name = "bg_stars_blue",
+        bg_image = "bg_stars_blue",
         endMessages = {
             "Orbital defenses holding.",
             "Preparing for final engagement at Lunar Base."
@@ -148,7 +148,7 @@ Levels.list = {
         maxEnemiesOnScreen = 7,
         objective = "elimination",
         enemiesToEliminate = 50,
-        image_name = "bg_lunar_base",
+        bg_image = "bg_lunar_base",
         endMessages = {
             "Lunar Base secured.",
             "All systems point to Hive Queen location.",
@@ -169,7 +169,7 @@ Levels.list = {
         maxEnemiesOnScreen = 1,
         objective = "elimination",
         enemiesToEliminate = 1,
-        image_name = "bg_ion",
+        bg_image = "bg_ion",
         lastLevel = true,
         endMessages = {
             "Hive Queen destroyed.",

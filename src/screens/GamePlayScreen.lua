@@ -146,7 +146,7 @@ local GamePlayScreen = BaseScreen:new({
     end,
 
     createBackground = function(self)
-        local bgImage = ImageManager:get(self.level.image_name or "bg_space")
+        local bgImage = ImageManager:get(self.level.bg_image or "bg_space")
         self.bg = UI.createScrollingBackground(bgImage, 60)
     end,
 
