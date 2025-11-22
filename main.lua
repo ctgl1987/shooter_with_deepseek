@@ -1,3 +1,7 @@
+if arg[2] == "debug" then
+    require("lldebugger").start()
+end
+
 -- Primero definimos las variables globales principales
 GAME_WIDTH = 1280
 GAME_HEIGHT = 720

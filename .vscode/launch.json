@@ -2,16 +2,27 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Run Love2D Project",
-            "type": "lua-local", // Or "node", "python", etc., depending on your debugger extension
+            "type": "lua-local",
             "request": "launch",
+            "name": "Debug",
             "program": {
-                "command": "love" // The command to execute the LÖVE2D engine
+                "command": "love"
             },
             "args": [
-                "." // This argument tells LÖVE2D to run the current directory as a game
+                ".",
+                "debug"
             ],
-            "cwd": "${workspaceFolder}" // Ensures the command runs from the project root
-        }
+        },
+        {
+            "type": "lua-local",
+            "request": "launch",
+            "name": "Release",
+            "program": {
+                "command": "love"
+            },
+            "args": [
+                ".",
+            ],
+        },
     ]
 }
