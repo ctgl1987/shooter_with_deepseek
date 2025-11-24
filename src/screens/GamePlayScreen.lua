@@ -32,6 +32,8 @@ local GamePlayScreen = BaseScreen:new({
         self.completed = false
         self.warped = false
 
+        self.levelStatus = 'playing'
+
         self.enemySpawnTimer = {
             value = 0,
             limit = self.level.spawnRate
@@ -41,7 +43,7 @@ local GamePlayScreen = BaseScreen:new({
         self:createBackground()
         self:setupCheats()
 
-        self.redFlash = UI.createScreenFlasher({1, 0, 0, 0.2}, 5)
+        self.redFlash = UI.createScreenFlasher({ 1, 0, 0, 0.2 }, 5)
     end,
 
     createPlayer = function(self)
@@ -88,8 +90,8 @@ local GamePlayScreen = BaseScreen:new({
                         count = 3,
                         color = "#FF0000CC", -- rojo
                         ttl = 20,
-                        spread = 10, -- poca dispersión
-                        speed = 15 -- baja velocidad
+                        spread = 10,         -- poca dispersión
+                        speed = 15           -- baja velocidad
                     })
                 end
             else
@@ -134,7 +136,7 @@ local GamePlayScreen = BaseScreen:new({
         self.player:on("post-render", function()
             local options = {
                 rotate = self.player.rotate or 0,
-                color = {1, 1 - self.player.weak, 1 - self.player.weak, 1}
+                color = { 1, 1 - self.player.weak, 1 - self.player.weak, 1 }
             }
 
             self.player.sprite:render(self.player:bounds(), options);
@@ -315,7 +317,6 @@ local GamePlayScreen = BaseScreen:new({
             enemy.hp = enemy.hp - damageEvent.damage
 
             if enemy.hp <= 0 then
-
                 enemy:emit("enemy-destroyed")
                 enemy.dead = true
             end
@@ -363,7 +364,7 @@ local GamePlayScreen = BaseScreen:new({
         AudioManager:play("shoot")
 
         local data = {
-            bullets = {bullet}
+            bullets = { bullet }
         }
         self.player:emit("bullet-created", data)
 
@@ -398,7 +399,6 @@ local GamePlayScreen = BaseScreen:new({
         item.image = ImageManager:get(template.image_name)
 
         item:on("post-render", function()
-
             local color = template.color
             local parsedColor = DrawManager:parseColor(color)
 
@@ -407,7 +407,7 @@ local GamePlayScreen = BaseScreen:new({
                 local radius = 50 - (i * 20)
                 --dark blue glow
                 DrawManager:fillCircle(pos.x, pos.y, radius, {
-                    color = {parsedColor[1], parsedColor[2], parsedColor[3], i / 10},
+                    color = { parsedColor[1], parsedColor[2], parsedColor[3], i / 10 },
                 })
             end
 
@@ -455,7 +455,7 @@ local GamePlayScreen = BaseScreen:new({
             local alpha = textEntity.ttl / ttl
             DrawManager:fillText(textEntity.text, textEntity.x + (offsetX or 0), textEntity.y + (offsetY or 0), {
                 align = "center",
-                color = {1, 1, 1, alpha}
+                color = { 1, 1, 1, alpha }
             })
         end
 
@@ -467,8 +467,8 @@ local GamePlayScreen = BaseScreen:new({
         local count = options.count or 10
         local baseColor = options.color or "#FFA600" -- naranja por defecto
         local ttl = options.ttl or 30
-        local spread = options.spread or 10 -- rango de dispersión
-        local speed = options.speed or 100 -- rango de dispersión
+        local spread = options.spread or 10          -- rango de dispersión
+        local speed = options.speed or 100           -- rango de dispersión
         local size = ENTITY_SIZE * 0.05
 
         for i = 1, count do
@@ -493,10 +493,30 @@ local GamePlayScreen = BaseScreen:new({
                 end
                 local alpha = particle.ttl / ttl
                 local parsedColor = DrawManager:parseColor(baseColor)
-                particle.color = {parsedColor[1], parsedColor[2], parsedColor[3], alpha}
+                particle.color = { parsedColor[1], parsedColor[2], parsedColor[3], alpha }
             end)
 
             table.insert(self.particles, particle)
+        end
+    end,
+
+    checkLevelStatus = function(self)
+        self:checkLevelComplete()
+
+        if self.levelStatus == 'completed' then
+            self:levelCompleted()
+        end
+
+        if self.levelStatus == 'outmessaging' then
+            self:handleLevelCompletion()
+        end
+
+        if self.levelStatus == 'warping' then
+            self:warpOut()
+        end
+
+        if self.levelStatus == 'warped' then
+            self:changeLevel()
         end
     end,
 
@@ -507,22 +527,21 @@ local GamePlayScreen = BaseScreen:new({
 
         if self.level.objective == "elimination" then
             if self.level.enemiesToEliminate <= 0 then
-                self:levelCompleted()
+                self.levelStatus = 'completed'
             end
         elseif self.level.objective == "survival" then
             self.level.timeLimit = self.level.timeLimit - 1
             if self.level.timeLimit <= 0 then
-                self:levelCompleted()
+                self.levelStatus = 'completed'
             end
         elseif self.level.objective == "collectData" then
             if self.level.dataToCollect <= 0 then
-                self:levelCompleted()
+                self.levelStatus = 'completed'
             end
         end
     end,
 
     levelCompleted = function(self)
-        self.completed = true
         print("Level Complete!")
 
         GameState.levelsUnlocked[self.level.id + 1] = true
@@ -560,12 +579,27 @@ local GamePlayScreen = BaseScreen:new({
         self.player.vx = 0
         self.player.friction = 1
         self.player:removeTask("PlayerControllerTask")
+        self.levelStatus = 'outmessaging'
+    end,
+
+    handleLevelCompletion = function(self)
+        -- Mover jugador al centro
+        local targetX = (GAME_WIDTH - self.player.width) / 2
+        self.player.x = self.player.x + (targetX - self.player.x) * 0.1
+        self.player.rotate = self.player.rotate + (0 - self.player.rotate) * 0.1
+
+        if self.endTimer.value < self.endTimer.limit then
+            self.endTimer.value = self.endTimer.value + 1
+        else
+            self.levelStatus = 'warping'
+        end
+
+        if self.completed and self.player:bottom() < -300 then
+            self.levelStatus = 'warped'
+        end
     end,
 
     warpOut = function(self)
-        if self.warped then
-            return
-        end
         self.bg.vy = 300
         self.warped = true
         self.player.vy = -300
@@ -585,19 +619,6 @@ local GamePlayScreen = BaseScreen:new({
             level = self.level,
             duration = math.floor(self.duration / 60)
         })
-    end,
-
-    handleLevelCompletion = function(self)
-        -- Mover jugador al centro
-        local targetX = (GAME_WIDTH - self.player.width) / 2
-        self.player.x = self.player.x + (targetX - self.player.x) * 0.1
-        self.player.rotate = self.player.rotate + (0 - self.player.rotate) * 0.1
-
-        if self.endTimer.value < self.endTimer.limit then
-            self.endTimer.value = self.endTimer.value + 1
-        else
-            self:warpOut()
-        end
     end,
 
     handleGameplay = function(self, dt)
@@ -667,7 +688,6 @@ local GamePlayScreen = BaseScreen:new({
                 local enemy = self.enemies[j]
 
                 if not bullet.dead and Utils.collision(bullet, enemy) then
-
                     -- notificar impacto
                     bullet:emit("bullet-hit", {
                         damage = bullet.damage,
@@ -792,11 +812,6 @@ local GamePlayScreen = BaseScreen:new({
             end
         end
 
-        if self.completed and self.player:bottom() < -300 then
-            self:changeLevel()
-            return
-        end
-
         self.bg:update(dt)
         self.player:update(dt)
 
@@ -809,12 +824,9 @@ local GamePlayScreen = BaseScreen:new({
             return
         end
 
-        if self.completed then
-            self:handleLevelCompletion()
-        end
         self:handleGameplay(dt)
 
-        self:checkLevelComplete()
+        self:checkLevelStatus()
     end,
 
     renderUI = function(self)
@@ -952,7 +964,7 @@ local GamePlayScreen = BaseScreen:new({
             introOffsetY, {
                 size = 30,
                 align = "center",
-                color = {1, 1, 0, alpha}
+                color = { 1, 1, 0, alpha }
             })
         introOffsetY = introOffsetY + 40
 
@@ -966,14 +978,14 @@ local GamePlayScreen = BaseScreen:new({
         for _, msg in ipairs(messages) do
             DrawManager:fillText(msg, GAME_WIDTH * 0.5, introOffsetY, {
                 align = "center",
-                color = {1, 1, 1, alpha}
+                color = { 1, 1, 1, alpha }
             })
             introOffsetY = introOffsetY + 30
         end
     end,
 
     renderCompletion = function(self)
-        if not self.completed or not self.level.endMessages then
+        if not self.levelStatus == 'outmessaging' then
             return
         end
 
@@ -995,12 +1007,12 @@ local GamePlayScreen = BaseScreen:new({
 
         -- draw semitransparent background for the box
         DrawManager:fillRect(startX, startY, boxWidth, boxHeight, {
-            color = {0, 0, 0, 0.5 * alpha},
+            color = { 0, 0, 0, 0.5 * alpha },
             borderRadius = 8
         })
 
         DrawManager:strokeRect(startX, startY, boxWidth, boxHeight, {
-            color = {1, 1, 1, alpha},
+            color = { 1, 1, 1, alpha },
             lineWidth = 2,
             borderRadius = 8
         })
@@ -1008,13 +1020,13 @@ local GamePlayScreen = BaseScreen:new({
         for i, msg in ipairs(self.level.endMessages) do
             DrawManager:fillText(msg, startX + characterImage:getWidth() + 40, startY - 20 + (i * 30), {
                 size = 24,
-                color = {1, 1, 0, alpha}
+                color = { 1, 1, 0, alpha }
             })
         end
 
         -- white box for the character image
         DrawManager:fillRect(startX + 10, startY + 10, characterImage:getWidth() + 20, boxHeight - 20, {
-            color = {1, 1, 1, 0.1 * alpha},
+            color = { 1, 1, 1, 0.1 * alpha },
             borderRadius = 8
         })
 
@@ -1028,20 +1040,7 @@ local GamePlayScreen = BaseScreen:new({
         })
     end,
 
-    render = function(self)
-        if ShakeDuration > 0 then
-            ShakeDuration = ShakeDuration - 1
-            if ShakeDuration < 0 then
-                ShakeDuration = 0
-            end
-        end
-
-        if ShakeDuration > 0 then
-            love.graphics.push()
-            local shakeX = Utils.randomInt(-ShakeMagnitude, ShakeMagnitude)
-            local shakeY = 0 -- Utils.randomInt(-ShakeMagnitude, ShakeMagnitude)
-            love.graphics.translate(shakeX, shakeY)
-        end
+    renderEntities = function(self)
         if self.warped then
             BlurEffect:draw(function()
                 self.bg:render()
@@ -1079,15 +1078,33 @@ local GamePlayScreen = BaseScreen:new({
         for _, bullet in ipairs(self.enemiesBullets) do
             bullet:render()
         end
+    end,
+
+    render = function(self)
+        if ShakeDuration > 0 then
+            ShakeDuration = ShakeDuration - 1
+            if ShakeDuration < 0 then
+                ShakeDuration = 0
+            end
+        end
+
+        if ShakeDuration > 0 then
+            love.graphics.push()
+            local shakeX = Utils.randomInt(-ShakeMagnitude, ShakeMagnitude)
+            local shakeY = 0 -- Utils.randomInt(-ShakeMagnitude, ShakeMagnitude)
+            love.graphics.translate(shakeX, shakeY)
+        end
+
+        self:renderEntities()
 
         if ShakeDuration > 0 then
             love.graphics.pop()
         end
 
         self.redFlash:render()
-        self:renderUI()
         self:renderIntro()
         self:renderCompletion()
+        self:renderUI()
     end
 })
 
