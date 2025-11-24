@@ -1,10 +1,13 @@
-local Levels = {}
+local Levels = {
+    list = {}
+}
 
 function CreateLevel(id, props)
-    return {
+
+    local level = {
         id = id,
         name = props.name or ("Level " .. id),
-        introMessages = props.introMessages or { "Welcome to Level " .. id },
+        introMessages = props.introMessages or {"Welcome to Level " .. id},
         enemies = props.enemies or {},
         spawnRate = props.spawnRate or 60,
         maxEnemiesOnScreen = props.maxEnemiesOnScreen or 5,
@@ -16,175 +19,183 @@ function CreateLevel(id, props)
         lastLevel = props.lastLevel or false,
         bg_image = props.bg_image or nil,
         bg_speed = props.bg_speed or 60,
-        
-        endMessages = props.endMessages or { "Level Completed!" },
-        tint = props.tint or nil,
+
+        endMessages = props.endMessages or {"Level Completed!"},
+        tint = props.tint or nil
     }
+
+    return level
 end
 
-Levels.list = {
-    CreateLevel(1, {
-        name = "Breach in the Kuiper Belt",
-        introMessages = {
-            "Scanners detect unknown signatures at the edge of the system.",
-            "Intercept and identify. Weapons free if hostile.",
-        },
-        enemies = {
-            { item = "scout",    weight = 3 },
-            { item = "kamikaze", weight = 1 },
-        },
-        spawnRate = 90,
-        maxEnemiesOnScreen = 3,
-        objective = "elimination",
-        enemiesToEliminate = 3,
-        bg_image = "bg_asteroids",
-        endMessages = {
-            "Initial contact made.",
-            "Prepare for escalating hostilities."
-        },
-    }),
-    CreateLevel(2, {
-        name = "The Outer Rim Offensive",
-        introMessages = {
-            "This is no scouting party. Full invasion force confirmed.",
-            "They broke through Jupiter defense grid! Fall back to Mars orbit!",
-        },
-        enemies = {
-            { item = "scout",    weight = 4 },
-            { item = "kamikaze", weight = 1 },
-            { item = "heavy",    weight = 1 },
-        },
-        spawnRate = 80,
-        maxEnemiesOnScreen = 4,
-        objective = "elimination",
-        enemiesToEliminate = 30,
-        bg_image = "bg_stars_purple",
-        bg_speed = 120,
-        endMessages = {
-            "Mars orbit reached.",
-            "Prepare for next wave."
-        },
-    }),
-    CreateLevel(3, {
-        name = "The Martian Gauntlet",
-        introMessages = {
-            "Mars Colony is evacuating. We are their only cover.",
-            "Buy the transports time. Hold this position!",
-        },
-        enemies = {
-            { item = "scout",    weight = 6 },
-            { item = "kamikaze", weight = 2 },
-            { item = "hunter",   weight = 2 },
-            { item = "heavy",    weight = 1 },
-        },
-        spawnRate = 70,
-        maxEnemiesOnScreen = 5,
-        objective = "survival",
-        timeLimit  = 120 * 60,
-        bg_image = "bg_stars_orange",
-        bg_speed = 120,
-        endMessages = {
-            "Transports have cleared Mars orbit.",
-            "Heading back to Earth."
-        },
-    }),
-    CreateLevel(4, {
-        name = "Data Recovery Operation",
-        introMessages = {
-            "Intelligence reports alien data cache in this sector.",
-            "Recover the encrypted data before they can transmit it.",
-            "Collect all data orbs to complete the mission."
-        },
-        enemies = {
-            { item = "scout",    weight = 4 },
-            { item = "kamikaze", weight = 3 },
-            { item = "sniper",   weight = 2 },
-            { item = "hunter",   weight = 1 }
-        },
-        spawnRate = 70,
-        maxEnemiesOnScreen = 6,
-        objective = "collectData",
-        dataToCollect = 8,
-        itemDropRate = 0.7,
-        bg_image = "bg_stars_green",
-        bg_speed = 90,
-        endMessages = {
-            "Data successfully recovered!",
-            "Alien encryption protocols acquired.",
-            "Returning to base for analysis."
-        }
-    }),
-    CreateLevel(5, {
-        name = "Earths Orbital Siege",
-        introMessages = {
-            "The battle reaches home. All defense platforms are engaged.",
-            "Failure is not an option. Earth is counting on us."
-        },
-        enemies = {
-            { item = "scout",    weight = 4 },
-            { item = "kamikaze", weight = 3 },
-            { item = "heavy",    weight = 2 },
-            { item = "sniper",   weight = 1 },
-        },
-        spawnRate = 60,
-        maxEnemiesOnScreen = 6,
-        objective = "elimination",
-        enemiesToEliminate = 40,
-        bg_image = "bg_stars_blue",
-        bg_speed = 120,
-        endMessages = {
-            "Orbital defenses holding.",
-            "Preparing for final engagement at Lunar Base."
-        },
-    }),
-    CreateLevel(6, {
-        name = "Last Stand at Lunar Base",
-        introMessages = {
-            "Command is gone. We are the last organized resistance.",
-            "They are deploying their elite guard. This is for all the marbles."
-        },
-        enemies = {
-            { item = "scout",    weight = 3 },
-            { item = "kamikaze", weight = 2 },
-            { item = "heavy",    weight = 2 },
-            { item = "sniper",   weight = 1 },
-            { item = "tank",     weight = 1 },
-        },
-        spawnRate = 50,
-        maxEnemiesOnScreen = 7,
-        objective = "elimination",
-        enemiesToEliminate = 50,
-        bg_image = "bg_lunar_base",
-        bg_speed = 90,
-        endMessages = {
-            "Lunar Base secured.",
-            "All systems point to Hive Queen location.",
-            "Final assault imminent."
-        },
-        tint = "#000000B3", -- Hex color string with alpha (black with 70% opacity)
-    }),
-    CreateLevel(7, {
-        name = "The Heart of the Swarm",
-        introMessages = {
-            "There it is... the Hive Queen. The source of the invasion.",
-            "One shot, one kill. End this war now."
-        },
-        enemies = {
-            { item = "boss", weight = 1 },
-        },
-        spawnRate = 40,
-        maxEnemiesOnScreen = 1,
-        objective = "elimination",
-        enemiesToEliminate = 1,
-        bg_image = "bg_ion",
-        bg_speed = 30,
-        lastLevel = true,
-        endMessages = {
-            "Hive Queen destroyed.",
-            "Swarm disorganized.",
-            "Earth is safe... for now."
-        },
-    }),
-}
+table.insert(Levels.list, CreateLevel(1, {
+    name = "Breach in the Kuiper Belt",
+    introMessages = {"Scanners detect unknown signatures at the edge of the system.",
+                     "Intercept and identify. Weapons free if hostile."},
+    enemies = {{
+        item = "scout",
+        weight = 3
+    }, {
+        item = "kamikaze",
+        weight = 1
+    }},
+    spawnRate = 90,
+    maxEnemiesOnScreen = 3,
+    objective = "elimination",
+    enemiesToEliminate = 3,
+    bg_image = "bg_asteroids",
+    endMessages = {"Initial contact made.", "Prepare for escalating hostilities."}
+}))
+
+table.insert(Levels.list, CreateLevel(2, {
+    name = "The Outer Rim Offensive",
+    introMessages = {"This is no scouting party. Full invasion force confirmed.",
+                     "They broke through Jupiter defense grid! Fall back to Mars orbit!"},
+    enemies = {{
+        item = "scout",
+        weight = 4
+    }, {
+        item = "kamikaze",
+        weight = 1
+    }, {
+        item = "heavy",
+        weight = 1
+    }},
+    spawnRate = 80,
+    maxEnemiesOnScreen = 4,
+    objective = "elimination",
+    enemiesToEliminate = 30,
+    bg_image = "bg_stars_purple",
+    bg_speed = 120,
+    endMessages = {"Mars orbit reached.", "Prepare for next wave."}
+}))
+
+table.insert(Levels.list, CreateLevel(3, {
+    name = "The Martian Gauntlet",
+    introMessages = {"Mars Colony is evacuating. We are their only cover.",
+                     "Buy the transports time. Hold this position!"},
+    enemies = {{
+        item = "scout",
+        weight = 6
+    }, {
+        item = "kamikaze",
+        weight = 2
+    }, {
+        item = "hunter",
+        weight = 2
+    }, {
+        item = "heavy",
+        weight = 1
+    }},
+    spawnRate = 70,
+    maxEnemiesOnScreen = 5,
+    objective = "survival",
+    timeLimit = 120 * 60,
+    bg_image = "bg_stars_orange",
+    bg_speed = 120,
+    endMessages = {"Transports have cleared Mars orbit.", "Heading back to Earth."}
+}))
+
+table.insert(Levels.list, CreateLevel(4, {
+    name = "Data Recovery Operation",
+    introMessages = {"Intelligence reports alien data cache in this sector.",
+                     "Recover the encrypted data before they can transmit it.",
+                     "Collect all data orbs to complete the mission."},
+    enemies = {{
+        item = "scout",
+        weight = 4
+    }, {
+        item = "kamikaze",
+        weight = 3
+    }, {
+        item = "sniper",
+        weight = 2
+    }, {
+        item = "hunter",
+        weight = 1
+    }},
+    spawnRate = 70,
+    maxEnemiesOnScreen = 6,
+    objective = "collectData",
+    dataToCollect = 8,
+    itemDropRate = 0.7,
+    bg_image = "bg_stars_green",
+    bg_speed = 90,
+    endMessages = {"Data successfully recovered!", "Alien encryption protocols acquired.",
+                   "Returning to base for analysis."}
+}))
+
+table.insert(Levels.list, CreateLevel(5, {
+    name = "Earths Orbital Siege",
+    introMessages = {"The battle reaches home. All defense platforms are engaged.",
+                     "Failure is not an option. Earth is counting on us."},
+    enemies = {{
+        item = "scout",
+        weight = 4
+    }, {
+        item = "kamikaze",
+        weight = 3
+    }, {
+        item = "heavy",
+        weight = 2
+    }, {
+        item = "sniper",
+        weight = 1
+    }},
+    spawnRate = 60,
+    maxEnemiesOnScreen = 6,
+    objective = "elimination",
+    enemiesToEliminate = 40,
+    bg_image = "bg_stars_blue",
+    bg_speed = 120,
+    endMessages = {"Orbital defenses holding.", "Preparing for final engagement at Lunar Base."}
+}))
+
+table.insert(Levels.list, CreateLevel(6, {
+    name = "Last Stand at Lunar Base",
+    introMessages = {"Command is gone. We are the last organized resistance.",
+                     "They are deploying their elite guard. This is for all the marbles."},
+    enemies = {{
+        item = "scout",
+        weight = 3
+    }, {
+        item = "kamikaze",
+        weight = 2
+    }, {
+        item = "heavy",
+        weight = 2
+    }, {
+        item = "sniper",
+        weight = 1
+    }, {
+        item = "tank",
+        weight = 1
+    }},
+    spawnRate = 50,
+    maxEnemiesOnScreen = 7,
+    objective = "elimination",
+    enemiesToEliminate = 50,
+    bg_image = "bg_lunar_base",
+    bg_speed = 90,
+    endMessages = {"Lunar Base secured.", "All systems point to Hive Queen location.", "Final assault imminent."},
+    tint = "#000000B3" -- Hex color string with alpha (black with 70% opacity)
+}))
+
+table.insert(Levels.list, CreateLevel(7, {
+    name = "The Heart of the Swarm",
+    introMessages = {"There it is... the Hive Queen. The source of the invasion.",
+                     "One shot, one kill. End this war now."},
+    enemies = {{
+        item = "boss",
+        weight = 1
+    }},
+    spawnRate = 40,
+    maxEnemiesOnScreen = 1,
+    objective = "elimination",
+    enemiesToEliminate = 1,
+    bg_image = "bg_ion",
+    bg_speed = 30,
+    lastLevel = true,
+    endMessages = {"Hive Queen destroyed.", "Swarm disorganized.", "Earth is safe... for now."}
+}))
 
 return Levels
