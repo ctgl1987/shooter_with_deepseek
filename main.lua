@@ -69,7 +69,6 @@ function love.load()
     BlurEffect.boxblur.radius = 5
 
 
-
     BaseEntity = require("src.core.BaseEntity")
     BaseScreen = require("src.core.BaseScreen")
     TaskSystem = require("src.core.TaskSystem")
@@ -84,27 +83,12 @@ function love.load()
     Levels = require("src.data.Levels")
     EnemyTypes = require("src.data.EnemyTypes")
     ItemTypes = require("src.data.ItemTypes")
-
-    -- Cargar pantallas
-    StartScreen = require("src.screens.StartScreen")
-    MenuScreen = require("src.screens.MenuScreen")
-    IntroScreen = require("src.screens.IntroScreen")
-    GameScreen = require("src.screens.GameScreen")
-
-    GameOverScreen = require("src.screens.GameOverScreen")
-    GameEndScreen = require("src.screens.GameEndScreen")
-    SettingScreen = require("src.screens.SettingScreen")
-    EnemyShowcaseScreen = require("src.screens.EnemyShowcaseScreen")
-
-    LevelSelectScreen = require("src.screens.LevelSelectScreen")
-    GamePlayScreen = require("src.screens.GamePlayScreen")
-    GamePauseScreen = require("src.screens.GamePauseScreen")
-    LevelCompletedScreen = require("src.screens.LevelCompletedScreen")
-
+    
     -- Inicializar managers
     DrawManager:init()
     KeyManager:init()
-
+    
+    -- Cargar pantallas
     SetupScreens()
 
     ScreenManager:change("start")
@@ -237,6 +221,24 @@ end
 
 -- Configuración de pantallas
 function SetupScreens()
+
+    local StartScreen = require("src.screens.StartScreen")
+    local MenuScreen = require("src.screens.MenuScreen")
+    local IntroScreen = require("src.screens.IntroScreen")
+    local GameScreen = require("src.screens.GameScreen")
+
+    local TestScreen = require("src.screens.TestScreen")
+
+    local GameOverScreen = require("src.screens.GameOverScreen")
+    local GameEndScreen = require("src.screens.GameEndScreen")
+    local SettingScreen = require("src.screens.SettingScreen")
+    local EnemyShowcaseScreen = require("src.screens.EnemyShowcaseScreen")
+
+    local LevelSelectScreen = require("src.screens.LevelSelectScreen")
+    local GamePlayScreen = require("src.screens.GamePlayScreen")
+    local GamePauseScreen = require("src.screens.GamePauseScreen")
+    local LevelCompletedScreen = require("src.screens.LevelCompletedScreen")
+
     -- Pantallas principales
     ScreenManager = ScreenManager:new("main")
     GameScreenManager = ScreenManager:new("game")
@@ -249,6 +251,7 @@ function SetupScreens()
     ScreenManager:add("game_end", GameEndScreen)
     ScreenManager:add("settings", SettingScreen)
     ScreenManager:add("game", GameScreen)
+    ScreenManager:add("test", TestScreen)
     ScreenManager:add("enemy_showcase", EnemyShowcaseScreen)
 
     -- Pantallas del juego
